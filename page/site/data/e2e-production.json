@@ -1,7 +1,7 @@
 {
   "target": "https://tax-mcp-demo.theaipipe.com",
-  "started": "2026-11-02T15:46:58.362Z",
-  "finished": "2026-11-02T15:47:39.829Z",
+  "started": "2026-11-02T15:56:50.432Z",
+  "finished": "2026-11-02T15:57:32.774Z",
   "client": "@modelcontextprotocol/client 2.4.0",
   "pass": 59,
   "total": 59,
@@ -35,7 +35,7 @@
     {
       "name": "CLAUDE anonymous estimate (no token)",
       "ok": true,
-      "note": "refund 1219, 45 ms"
+      "note": "refund 1219, 40 ms"
     },
     {
       "name": "CLAUDE out-of-scope profile refused with a reason",
@@ -74,12 +74,12 @@
     {
       "name": "CLAUDE account created during authorization, tokens issued",
       "ok": true,
-      "note": "sign-up round trip 2557 ms"
+      "note": "sign-up round trip 2466 ms"
     },
     {
       "name": "CLAUDE resumed Save stores the estimate shown",
       "ok": true,
-      "note": "sav_6fcub4z7tjud in Demo account JZ6K, 5982 ms from the first Save"
+      "note": "sav_9fqs6qkhvzar in Demo account ZHDE, 6162 ms from the first Save"
     },
     {
       "name": "CLAUDE Save result alone is enough for a full card (assumptions, sources, engine, lines)",
@@ -133,17 +133,17 @@
     {
       "name": "CHATGPT card resource is text/html;profile=mcp-app",
       "ok": true,
-      "note": "ui.domain https://tax-mcp-demo.theaipipe.com"
+      "note": "ui.domain undefined"
     },
     {
-      "name": "CHATGPT card declares its CSP and domain for ChatGPT (ui.csp, ui.domain, openai/widgetCSP, openai/widgetDomain)",
+      "name": "CHATGPT card declares its CSP in ui.csp, and no ChatGPT-specific domain (the state filmed in ChatGPT on Nov 2, 2026)",
       "ok": true,
-      "note": "widgetDomain https://tax-mcp-demo.theaipipe.com"
+      "note": "openai/widgetCSP and openai/widgetDomain left for a host-tested pass"
     },
     {
       "name": "CHATGPT anonymous estimate (no token)",
       "ok": true,
-      "note": "refund 1219, 28 ms"
+      "note": "refund 1219, 25 ms"
     },
     {
       "name": "CHATGPT out-of-scope profile refused with a reason",
@@ -177,12 +177,12 @@
     {
       "name": "CHATGPT account created during authorization, tokens issued",
       "ok": true,
-      "note": "sign-up round trip 2932 ms"
+      "note": "sign-up round trip 2788 ms"
     },
     {
       "name": "CHATGPT resumed Save stores the estimate shown",
       "ok": true,
-      "note": "sav_dmvjmw382yyb in Demo account F8C7, 6151 ms from the first Save"
+      "note": "sav_fn9ddart3krf in Demo account 2F3Y, 6189 ms from the first Save"
     },
     {
       "name": "CHATGPT Save result alone is enough for a full card (assumptions, sources, engine, lines)",
@@ -221,7 +221,7 @@
     {
       "name": "WEB the refused call wrote nothing: the first Save with the full scope is a new record",
       "ok": true,
-      "note": "sav_4qgqb5eyrsau"
+      "note": "sav_umza73pjhneq"
     },
     {
       "name": "A self-registered client named \"ChatGPT\" is shown as an unverified app, its name not repeated",
@@ -356,14 +356,14 @@
     },
     {
       "url": "/mcp/claude",
-      "method": "tools/call",
-      "status": 200,
+      "method": null,
+      "status": 405,
       "www_authenticate": null
     },
     {
       "url": "/mcp/claude",
-      "method": null,
-      "status": 405,
+      "method": "tools/call",
+      "status": 200,
       "www_authenticate": null
     },
     {
@@ -644,14 +644,14 @@
     },
     {
       "url": "/mcp/chatgpt",
-      "method": null,
-      "status": 405,
+      "method": "tools/call",
+      "status": 200,
       "www_authenticate": null
     },
     {
       "url": "/mcp/chatgpt",
-      "method": "tools/call",
-      "status": 200,
+      "method": null,
+      "status": 405,
       "www_authenticate": null
     }
   ]

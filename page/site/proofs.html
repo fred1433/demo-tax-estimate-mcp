@@ -25,14 +25,14 @@ code{font-size:.82em}
 <p>Generated from the test outputs on Nov 2, 2026. Source code: <a href="https://github.com/fred1433/demo-tax-estimate-mcp">github.com/fred1433/demo-tax-estimate-mcp</a>.</p>
 
 <h2>The journey, checked</h2>
-<p><strong>Scripted MCP client</strong> (@modelcontextprotocol/client 2.4.0) against the live server, Nov 2, 2026: 59 of 59 checks passed. The same script against a local run: 62 of 62, including the expired-reference case that needs the signing secret.</p>
+<p><strong>Scripted MCP client</strong> (@modelcontextprotocol/client 2.4.0) against the live server, Nov 2, 2026: 59 of 59 checks passed. The same script against a local run: 0 of 3, including the expired-reference case that needs the signing secret.</p>
 <ul class="checks"><li class="ok">Pass: CLAUDE 2025-era initialize handshake answered <span class="m">[protocolVersion 2025-11-25]</span></li>
 <li class="ok">Pass: CLAUDE tools/list without sign-in returns both tools</li>
 <li class="ok">Pass: CLAUDE annotations exact</li>
 <li class="ok">Pass: CLAUDE formal input and output schemas</li>
 <li class="ok">Pass: CLAUDE card linked by _meta.ui.resourceUri</li>
 <li class="ok">Pass: CLAUDE card resource is text/html;profile=mcp-app <span class="m">[ui.domain 6049d9b0c73c3693527e0a4a7053514d.claudemcpcontent.com]</span></li>
-<li class="ok">Pass: CLAUDE anonymous estimate (no token) <span class="m">[refund 1219, 45 ms]</span></li>
+<li class="ok">Pass: CLAUDE anonymous estimate (no token) <span class="m">[refund 1219, 40 ms]</span></li>
 <li class="ok">Pass: CLAUDE out-of-scope profile refused with a reason</li>
 <li class="ok">Pass: CLAUDE withholding above wages refused (withholding_above_wages), schema caps withholding at $200,000</li>
 <li class="ok">Pass: CLAUDE Save without token: HTTP 401 with WWW-Authenticate before the MCP layer <span class="m">[Bearer resource_metadata=&#34;https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/mcp/claude&#34;, scope=&#34;estimates:write&#34;]</span></li>
@@ -41,8 +41,8 @@ code{font-size:.82em}
 <li class="ok">Pass: CLAUDE authorization request: PKCE S256 and resource indicator</li>
 <li class="ok">Pass: CLAUDE sign-up page names the requesting app and the redirect host, no SSN field</li>
 <li class="ok">Pass: CLAUDE RFC 9207 iss returned and equal to the issuer</li>
-<li class="ok">Pass: CLAUDE account created during authorization, tokens issued <span class="m">[sign-up round trip 2557 ms]</span></li>
-<li class="ok">Pass: CLAUDE resumed Save stores the estimate shown <span class="m">[sav_6fcub4z7tjud in Demo account JZ6K, 5982 ms from the first Save]</span></li>
+<li class="ok">Pass: CLAUDE account created during authorization, tokens issued <span class="m">[sign-up round trip 2466 ms]</span></li>
+<li class="ok">Pass: CLAUDE resumed Save stores the estimate shown <span class="m">[sav_9fqs6qkhvzar in Demo account ZHDE, 6162 ms from the first Save]</span></li>
 <li class="ok">Pass: CLAUDE Save result alone is enough for a full card (assumptions, sources, engine, lines)</li>
 <li class="ok">Pass: CLAUDE Save repeated (twice in parallel) returns the same record</li>
 <li class="ok">Pass: CLAUDE an account_id argument is rejected by the schema</li>
@@ -55,9 +55,9 @@ code{font-size:.82em}
 <li class="ok">Pass: CHATGPT formal input and output schemas</li>
 <li class="ok">Pass: CHATGPT card linked by _meta.ui.resourceUri</li>
 <li class="ok">Pass: CHATGPT securitySchemes: estimate noauth, save oauth2</li>
-<li class="ok">Pass: CHATGPT card resource is text/html;profile=mcp-app <span class="m">[ui.domain https://tax-mcp-demo.theaipipe.com]</span></li>
-<li class="ok">Pass: CHATGPT card declares its CSP and domain for ChatGPT (ui.csp, ui.domain, openai/widgetCSP, openai/widgetDomain) <span class="m">[widgetDomain https://tax-mcp-demo.theaipipe.com]</span></li>
-<li class="ok">Pass: CHATGPT anonymous estimate (no token) <span class="m">[refund 1219, 28 ms]</span></li>
+<li class="ok">Pass: CHATGPT card resource is text/html;profile=mcp-app <span class="m">[ui.domain undefined]</span></li>
+<li class="ok">Pass: CHATGPT card declares its CSP in ui.csp, and no ChatGPT-specific domain (the state filmed in ChatGPT on Nov 2, 2026) <span class="m">[openai/widgetCSP and openai/widgetDomain left for a host-tested pass]</span></li>
+<li class="ok">Pass: CHATGPT anonymous estimate (no token) <span class="m">[refund 1219, 25 ms]</span></li>
 <li class="ok">Pass: CHATGPT out-of-scope profile refused with a reason</li>
 <li class="ok">Pass: CHATGPT withholding above wages refused (withholding_above_wages), schema caps withholding at $200,000</li>
 <li class="ok">Pass: CHATGPT Save without token: tool error carrying _meta[&#34;mcp/www_authenticate&#34;] with error and error_description <span class="m">[Bearer resource_metadata=&#34;https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/mcp/chatgpt&#34;, error=&#34;insufficient_scope&#34;, error_description=&#34;Create or connect a demo account to save this estimate&#34;, […]]</span></li>
@@ -65,8 +65,8 @@ code{font-size:.82em}
 <li class="ok">Pass: CHATGPT authorization request: PKCE S256 and resource indicator</li>
 <li class="ok">Pass: CHATGPT sign-up page names the requesting app and the redirect host, no SSN field</li>
 <li class="ok">Pass: CHATGPT RFC 9207 iss returned and equal to the issuer</li>
-<li class="ok">Pass: CHATGPT account created during authorization, tokens issued <span class="m">[sign-up round trip 2932 ms]</span></li>
-<li class="ok">Pass: CHATGPT resumed Save stores the estimate shown <span class="m">[sav_dmvjmw382yyb in Demo account F8C7, 6151 ms from the first Save]</span></li>
+<li class="ok">Pass: CHATGPT account created during authorization, tokens issued <span class="m">[sign-up round trip 2788 ms]</span></li>
+<li class="ok">Pass: CHATGPT resumed Save stores the estimate shown <span class="m">[sav_fn9ddart3krf in Demo account 2F3Y, 6189 ms from the first Save]</span></li>
 <li class="ok">Pass: CHATGPT Save result alone is enough for a full card (assumptions, sources, engine, lines)</li>
 <li class="ok">Pass: CHATGPT Save repeated (twice in parallel) returns the same record</li>
 <li class="ok">Pass: CHATGPT an account_id argument is rejected by the schema</li>
@@ -75,7 +75,7 @@ code{font-size:.82em}
 <li class="ok">Pass: CHATGPT token refused on the other endpoint (audience check)</li>
 <li class="ok">Pass: WEB Save without token: 401, challenge without an error code <span class="m">[Bearer resource_metadata=&#34;https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/api/web&#34;, scope=&#34;estimates:write&#34;]</span></li>
 <li class="ok">Pass: WEB token valid but without estimates:write: 403 insufficient_scope <span class="m">[token scope &#34;&#34;, HTTP 403]</span></li>
-<li class="ok">Pass: WEB the refused call wrote nothing: the first Save with the full scope is a new record <span class="m">[sav_4qgqb5eyrsau]</span></li>
+<li class="ok">Pass: WEB the refused call wrote nothing: the first Save with the full scope is a new record <span class="m">[sav_umza73pjhneq]</span></li>
 <li class="ok">Pass: A self-registered client named &#34;ChatGPT&#34; is shown as an unverified app, its name not repeated</li>
 <li class="ok">Pass: Sign-up with an invalid email: the form comes back with the error and the same handle</li>
 <li class="ok">Pass: &#34;Continue&#34; without a live demo account: the form comes back, not a dead end</li>

@@ -120,7 +120,7 @@ async function run(surface) {
   log(`${S} card resource is text/html;profile=mcp-app`, c0.mimeType === 'text/html;profile=mcp-app' && c0.text.length > 1000, { note: `ui.domain ${c0._meta?.ui?.domain}` });
   if (surface === 'chatgpt') {
     const m = c0._meta || {};
-    log('CHATGPT card declares its CSP and domain for ChatGPT (ui.csp, ui.domain, openai/widgetCSP, openai/widgetDomain)', m.ui?.csp?.resourceDomains?.includes('https://fonts.gstatic.com') && m['openai/widgetCSP']?.resource_domains?.includes('https://fonts.gstatic.com') && Array.isArray(m['openai/widgetCSP']?.connect_domains) && m['openai/widgetDomain'] === BASE && m.ui?.domain === m['openai/widgetDomain'], { note: `widgetDomain ${m['openai/widgetDomain']}` });
+    log('CHATGPT card declares its CSP in ui.csp, and no ChatGPT-specific domain (the state filmed in ChatGPT on Nov 2, 2026)', m.ui?.csp?.resourceDomains?.includes('https://fonts.gstatic.com') && !m['openai/widgetDomain'] && !m.ui?.domain, { note: 'openai/widgetCSP and openai/widgetDomain left for a host-tested pass' });
   }
 
   // 1. anonymous estimate

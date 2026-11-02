@@ -240,7 +240,7 @@ async function hosts() {
     box.innerHTML = `<video controls preload="metadata" playsinline ${h.poster ? `poster="${esc(h.poster)}"` : ''} src="${esc(h.video)}"></video>
       <div class="rec-meta"><p class="rec-when">Recorded ${esc(h.date)} on ${esc(h.surface)}.</p>
       <p><span class="rec-k">Edit:</span> ${esc(h.video_note)}</p>
-      ${host === 'chatgpt' ? '<p><span class="rec-k">Card label:</span> the “CSP off” label ChatGPT shows on the card in this recording predates the server declaring the card\'s content policy and domain in ChatGPT\'s own keys (<code>openai/widgetCSP</code>, <code>openai/widgetDomain</code>); not filmed again since.</p>' : ''}
+      ${host === 'chatgpt' ? '<p><span class="rec-k">Card label:</span> ChatGPT shows “CSP off” on the card. The card declares its content policy in the MCP Apps key (<code>ui.csp</code>), not yet in ChatGPT\'s own keys (<code>openai/widgetCSP</code>, <code>openai/widgetDomain</code>): left for a pass tested inside ChatGPT.</p>' : ''}
       ${h.repeat_save ? `<p><span class="rec-k">Save again:</span> ${esc(h.repeat_save)}</p>` : ''}</div>`;
     const ok = h.status === 'recorded';
     side.innerHTML = `<h3 class="${ok ? 'r-ok' : 'r-part'}">${ok ? 'Back in the same conversation, saved' : 'Saved, after reopening the conversation'}</h3>

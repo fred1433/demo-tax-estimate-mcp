@@ -198,9 +198,6 @@ function buildServer({ env, surface, origin, authInfo, uiDomain }) {
         },
         ...(isChatGPT ? {
           'openai/widgetDescription': 'Shows the federal tax estimate, its assumptions and a Save button. The model does not need to repeat the numbers.',
-          // ChatGPT's compatibility keys for the same policy and origin as ui.csp and ui.domain.
-          'openai/widgetCSP': { connect_domains: [], resource_domains: ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'] },
-          'openai/widgetDomain': uiDomain,
         } : {}),
       },
     }],
@@ -213,7 +210,7 @@ export function makeHandlers(origin) {
   const handlers = {};
   for (const surface of ['claude', 'chatgpt']) {
     // Claude: its sandbox host derived from the server URL. ChatGPT: a dedicated origin of our own.
-    let uiDomainPromise = surface === 'claude' ? claudeUiDomain(`${origin}/mcp/claude`) : Promise.resolve(origin);
+    let uiDomainPromise = surface === 'claude' ? claudeUiDomain(`${origin}/mcp/claude`) : Promise.resolve(null);
     handlers[surface] = (env) => createMcpHandler(async (ctx) => buildServer({ env, surface, origin, authInfo: ctx.authInfo, uiDomain: await uiDomainPromise }), {
       legacy: 'stateless',
       onerror: () => logEvent('error', { surface, code: 'mcp_sdk' }),
