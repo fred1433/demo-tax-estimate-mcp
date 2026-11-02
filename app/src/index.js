@@ -22,6 +22,8 @@ function init(env) {
     clientIdMetadataDocumentEnabled: true,
     clientRegistrationEndpoint: '/oauth/register',
     accessTokenTTL: 3600,
+    // A grant lives no longer than the demo account it opens (accounts are deleted after 7 days).
+    refreshTokenTTL: 7 * 86400,
     onError: ({ code }) => { logEvent('oauth_error', { surface: 'oauth', code: String(code).toLowerCase() }); },
   });
   const handlers = makeHandlers(ORIGIN);
@@ -40,13 +42,17 @@ function prm(resource, path) {
   }, { headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=300' } });
 }
 
+// RFC 6750 section 3.1: a request that sent no token gets a challenge without an error code;
+// error="invalid_token" only when a token was sent and rejected, "insufficient_scope" for a token
+// that lacks the permission.
 function challenge(surface, error, description, status = 401) {
   const metadata = surface === 'web' ? `${ORIGIN}/.well-known/oauth-protected-resource/api/web` : prmUrl(ORIGIN, surface);
-  return new Response(JSON.stringify({ error, error_description: description }), {
+  const params = error ? `error="${error}", error_description="${description}", ` : '';
+  return new Response(JSON.stringify(error ? { error, error_description: description } : { message: description }), {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'WWW-Authenticate': `Bearer error="${error}", error_description="${description}", resource_metadata="${metadata}", scope="${SCOPE}"`,
+      'WWW-Authenticate': `Bearer ${params}resource_metadata="${metadata}", scope="${SCOPE}"`,
       ...cors(surface),
     },
   });
@@ -57,7 +63,8 @@ function cors(surface) {
   return { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS', 'Access-Control-Expose-Headers': 'WWW-Authenticate, Mcp-Session-Id, MCP-Protocol-Version' };
 }
 
-// Returns null (no token), { invalid: true } or an MCP AuthInfo.
+// Returns null (no token), { invalid: true }, { accountGone, accountId } (a valid token whose demo
+// account has expired or been deleted) or an MCP AuthInfo.
 async function authenticate(request, env, resource) {
   const h = request.headers.get('Authorization');
   if (!h) return null;
@@ -65,7 +72,19 @@ async function authenticate(request, env, resource) {
   if (!m) return { invalid: true };
   const v = await authServer.validateToken(resource, m[1], env);
   if (!v) return { invalid: true };
-  return { token: m[1], clientId: v.clientId, scopes: v.scope, expiresAt: v.expiresAt, resource: new URL(resource), extra: { accountId: v.props?.accountId ?? v.userId } };
+  const accountId = v.props?.accountId ?? v.userId;
+  if (!(await getAccount(env, accountId))) return { accountGone: true, accountId };
+  return { token: m[1], clientId: v.clientId, scopes: v.scope, expiresAt: v.expiresAt, resource: new URL(resource), extra: { accountId } };
+}
+
+async function revokeGrants(env, userId) {
+  try {
+    const oauth = authServer.getOAuthApi(env);
+    const { items } = await oauth.listUserGrants(userId);
+    for (const g of items) await oauth.revokeGrant(g.id, userId);
+  } catch {
+    logEvent('error', { surface: 'oauth', code: 'grant_revoke_failed' });
+  }
 }
 
 function callsTool(body, name) {
@@ -76,20 +95,32 @@ function callsTool(body, name) {
 async function handleMcp(request, env, surface, cid) {
   const t0 = Date.now();
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(surface) });
-  const auth = await authenticate(request, env, RESOURCES[surface]);
+  let auth = await authenticate(request, env, RESOURCES[surface]);
   if (auth?.invalid) {
     logEvent('auth_challenge', { surface, code: 'invalid_token', cid });
-    return challenge(surface, 'invalid_token', 'The access token is missing, expired or not for this server');
+    return challenge(surface, 'invalid_token', 'The access token is expired or not for this server');
   }
+  // Expired demo account: the estimate keeps working anonymously, and Save asks for a fresh
+  // sign-in in each host's own way (HTTP 401 for Claude, the tool error for ChatGPT). The grants
+  // are revoked at that point, so a refresh cannot bring back a token for the missing account.
+  const gone = auth?.accountGone ? auth.accountId : null;
+  const accountGone = !!gone;
+  if (accountGone) auth = null;
   let res;
   if (request.method === 'POST') {
     const text = await request.text();
     let body;
     try { body = JSON.parse(text); } catch { body = undefined; }
+    if (accountGone && callsTool(body, 'save_estimate')) {
+      logEvent('auth_challenge', { surface, code: 'account_expired', cid });
+      await revokeGrants(env, gone);
+    }
     if (!auth && surface === 'claude' && callsTool(body, 'save_estimate')) {
       // Claude starts its sign-in prompt only on a transport-level 401 with WWW-Authenticate.
       logEvent('auth_challenge', { surface, code: 'http_401', cid, ms: Date.now() - t0 });
-      return challenge('claude', 'invalid_token', 'Sign in to save this estimate');
+      return accountGone
+        ? challenge('claude', 'invalid_token', 'This demo account has expired. Sign in again to save this estimate')
+        : challenge('claude', null, 'Sign in to save this estimate');
     }
     if (auth && !auth.scopes.includes(SCOPE) && surface === 'claude' && callsTool(body, 'save_estimate')) {
       return challenge('claude', 'insufficient_scope', 'Saving needs the estimates:write permission', 403);
@@ -118,9 +149,19 @@ async function handleWeb(request, env, path, cid) {
   }
   if (path === '/api/web/save' && request.method === 'POST') {
     const auth = await authenticate(request, env, RESOURCES.web);
-    if (!auth || auth.invalid) {
-      logEvent('auth_challenge', { surface: 'web', code: auth ? 'invalid_token' : 'http_401', cid });
-      return challenge('web', 'invalid_token', 'Sign in to save this estimate');
+    if (!auth) {
+      logEvent('auth_challenge', { surface: 'web', code: 'http_401', cid });
+      return challenge('web', null, 'Sign in to save this estimate');
+    }
+    if (auth.accountGone) await revokeGrants(env, auth.accountId);
+    if (auth.invalid || auth.accountGone) {
+      logEvent('auth_challenge', { surface: 'web', code: auth.invalid ? 'invalid_token' : 'account_expired', cid });
+      return challenge('web', 'invalid_token', auth.invalid ? 'The access token is expired or not for this server' : 'This demo account has expired. Sign in again');
+    }
+    // The permission is checked before the body is read or anything is written.
+    if (!auth.scopes.includes(SCOPE)) {
+      logEvent('auth_challenge', { surface: 'web', code: 'insufficient_scope', cid });
+      return challenge('web', 'insufficient_scope', 'Saving needs the estimates:write permission', 403);
     }
     let body;
     try { body = await request.json(); } catch { return json({ error: 'invalid_json' }, 400); }
@@ -132,16 +173,23 @@ async function handleWeb(request, env, path, cid) {
   return json({ error: 'not_found' }, 404);
 }
 
-// Session cookie: account id + HMAC, so a returning visitor can reuse the demo account.
+// Session cookie: account id + HMAC-SHA-256, so a returning visitor can reuse the demo account.
+// Checked with crypto.subtle.verify, which compares in constant time.
+const hmacKey = (env) => crypto.subtle.importKey('raw', new TextEncoder().encode(env.SESSION_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
+const b64u = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 async function sign(env, value) {
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.SESSION_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const s = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value)));
-  return btoa(String.fromCharCode(...s.slice(0, 18))).replace(/\+/g, '-').replace(/\//g, '_');
+  return b64u(new Uint8Array(await crypto.subtle.sign('HMAC', await hmacKey(env), new TextEncoder().encode(value))));
+}
+async function verify(env, value, sig) {
+  let bytes;
+  try { bytes = Uint8Array.from(atob(sig.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((sig.length + 3) % 4)), (c) => c.charCodeAt(0)); } catch { return false; }
+  if (bytes.length !== 32) return false;
+  return crypto.subtle.verify('HMAC', await hmacKey(env), bytes, new TextEncoder().encode(value));
 }
 async function sessionAccount(request, env) {
   const c = request.headers.get('Cookie') || '';
   const m = new RegExp(`${SESSION_COOKIE}=(acct_[a-z0-9]+)\\.([A-Za-z0-9_-]+)`).exec(c);
-  if (!m || (await sign(env, m[1])) !== m[2]) return null;
+  if (!m || !(await verify(env, m[1], m[2]))) return null;
   return getAccount(env, m[1]);
 }
 async function sessionCookie(env, accountId) {
@@ -174,8 +222,10 @@ async function handleAuthorize(request, env, cid) {
       let account = null;
       if (action === 'continue') account = await sessionAccount(request, env);
       const email = String(form.get('email') || '').trim();
+      // A mistake on the form brings the form back, with the same handle (not used up yet).
+      if (action === 'continue' && !account) return formAgain(request, env, oauth, handle, 'That demo account no longer exists (demo accounts are deleted after 7 days). Create a new one below.', '');
       if (!account && !/^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/.test(email)) {
-        return errorPage('Enter an email address for the demo account.');
+        return formAgain(request, env, oauth, handle, 'Enter an email address for the demo account, such as you@example.com.', email.slice(0, 254));
       }
       const approved = await oauth.approveConsent(request, handle, { scope: [SCOPE] });
       const details = await oauth.describeConsent(approved.request);
@@ -210,15 +260,27 @@ async function handleAuthorize(request, env, cid) {
   }
 }
 
+// The form posts to the authorization URL itself, so the request can be parsed again from it.
+async function formAgain(request, env, oauth, handle, error, email) {
+  const details = await oauth.describeConsent(await oauth.parseAuthRequest(request));
+  const acct = await sessionAccount(request, env);
+  logEvent('oauth_page', { surface: 'oauth', code: 'form_error' });
+  return new Response(authorizePage({ details, handle, error, email, existing: acct ? { label: accountLabel(acct.id), hint: maskEmail(acct.email) } : null }), {
+    status: 400,
+    headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Frame-Options': 'DENY', 'Content-Security-Policy': "frame-ancestors 'none'" },
+  });
+}
+
 export default {
   fetch(request, env, ctx) {
     return withRequestScope(request, () => route(request, env, ctx));
   },
   async scheduled(event, env, ctx) {
     init(env);
-    const n = await purge(env);
+    const ids = await purge(env);
+    for (const id of ids) await revokeGrants(env, id);
     await authServer.purgeExpiredData(env).catch(() => {});
-    logEvent('purge', { surface: 'cron', outcome: 'ok', code: n ? 'accounts_removed' : 'nothing_to_remove' });
+    logEvent('purge', { surface: 'cron', outcome: 'ok', code: ids.length ? 'accounts_removed' : 'nothing_to_remove' });
   },
 };
 

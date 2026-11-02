@@ -107,6 +107,9 @@ export function scopeCheck(p) {
   }
   if (!Number.isInteger(p.w2_wages) || p.w2_wages < 0) reasons.push(reason('missing_answer', 'Give the expected W-2 wages for the full year, in whole dollars.'));
   if (!Number.isInteger(p.federal_income_tax_withheld) || p.federal_income_tax_withheld < 0) reasons.push(reason('missing_answer', 'Give the expected federal income tax withheld for the full year, in whole dollars.'));
+  if (Number.isInteger(p.w2_wages) && Number.isInteger(p.federal_income_tax_withheld) && p.federal_income_tax_withheld > p.w2_wages) {
+    reasons.push(reason('withholding_above_wages', `${fmt(p.federal_income_tax_withheld)} of federal tax withheld is more than the ${fmt(p.w2_wages)} of W-2 wages, which cannot happen on a W-2. Check both full-year amounts.`));
+  }
   if (Number.isInteger(p.w2_wages) && p.w2_wages > LIMITS.max_wages) {
     reasons.push(reason('wages_above_limit', `Wages above ${fmt(LIMITS.max_wages)} bring in Additional Medicare Tax and credit phase-outs this stand-in engine does not handle.`));
   }

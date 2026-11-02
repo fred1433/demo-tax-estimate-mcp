@@ -50,7 +50,7 @@ def num(s):
 
 def parse_tax_table(txt, year):
     # The Tax Table pages come before the worksheet title.
-    end = txt.index(DOCS[year]['worksheet_title'] + '—Line 16')
+    end = txt.index(DOCS[year]['worksheet_title'] + '\u2014Line 16')
     rows = {}
     for line in txt[:end].splitlines():
         nums = [num(x) for x in re.findall(r'(?<![\d,])\d{1,3}(?:,\d{3})*(?![\d,])', line)]
@@ -67,7 +67,7 @@ def parse_tax_table(txt, year):
 
 
 def parse_worksheet(txt, year):
-    start = txt.index(DOCS[year]['worksheet_title'] + '—Line 16')
+    start = txt.index(DOCS[year]['worksheet_title'] + '\u2014Line 16')
     block = txt[start:start + 12000]
     out = {}
     for status, sec in WS_SECTION.items():

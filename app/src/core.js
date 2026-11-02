@@ -76,17 +76,16 @@ export async function saveEstimate(env, { accountId, estimateId, surface }) {
   if (!account) return { status: 'error', error: 'account_not_found', message: 'This demo account no longer exists (demo accounts are deleted after 7 days). Sign in again.' };
   const newId = `sav_${rand(12)}`;
   const now = Date.now();
-  const snapshot = JSON.stringify({ engine: ENGINE, issued_at: ref.issuedAt, ...summary(r), assumptions: r.assumptions });
+  const snapshot = JSON.stringify({ engine: ENGINE, issued_at: ref.issuedAt, ...summary(r), parameters_note: r.parameters_note, assumptions: r.assumptions, sources: r.sources });
   await env.DB.prepare('INSERT INTO saves (id, account_id, estimate_id, saved_at, surface, snapshot) VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT(account_id, estimate_id) DO NOTHING')
     .bind(newId, accountId, estimateId, now, surface, snapshot).run();
   const row = await env.DB.prepare('SELECT id, saved_at, surface, snapshot FROM saves WHERE account_id = ?1 AND estimate_id = ?2').bind(accountId, estimateId).first();
   const alreadySaved = row.id !== newId;
-  let serverEvent = null;
-  if (!alreadySaved) {
-    serverEvent = await buildServerEvent({ kind: 'estimate_saved', accountId, email: account.email, surface, eventKey: row.id });
-    await env.DB.prepare('INSERT INTO server_events (event_id, account_id, created_at, payload) VALUES (?1, ?2, ?3, ?4) ON CONFLICT(event_id) DO NOTHING')
-      .bind(serverEvent.event_id, accountId, now, JSON.stringify(serverEvent)).run();
-  }
+  // Always try the event insert for the canonical record: if a first attempt was cut short after
+  // the save was written, a retried Save restores it. The event_id makes it a no-op otherwise.
+  const serverEvent = await buildServerEvent({ kind: 'estimate_saved', accountId, email: account.email, surface: row.surface, eventKey: row.id, now: row.saved_at });
+  await env.DB.prepare('INSERT INTO server_events (event_id, account_id, created_at, payload) VALUES (?1, ?2, ?3, ?4) ON CONFLICT(event_id) DO NOTHING')
+    .bind(serverEvent.event_id, accountId, row.saved_at, JSON.stringify(serverEvent)).run();
   const saved = JSON.parse(row.snapshot);
   return {
     status: 'saved',
@@ -96,7 +95,13 @@ export async function saveEstimate(env, { accountId, estimateId, surface }) {
     already_saved: alreadySaved,
     saved_from: row.surface,
     account: { id: accountId, label: accountLabel(accountId), email_hint: maskEmail(account.email) },
-    estimate: { tax_year: saved.tax_year, outcome: saved.outcome, amount: saved.amount, filing_status: saved.filing_status, lines: saved.lines, parameters_status: saved.parameters_status },
+    // Records saved before sources were kept get them from the recomputation above, which ran on
+    // the same engine version and gave the same result.
+    estimate: {
+      tax_year: saved.tax_year, outcome: saved.outcome, amount: saved.amount, filing_status: saved.filing_status, lines: saved.lines,
+      parameters_status: saved.parameters_status, parameters_note: saved.parameters_note ?? r.parameters_note,
+      engine: saved.engine ?? ENGINE, assumptions: saved.assumptions ?? r.assumptions, sources: saved.sources ?? r.sources,
+    },
   };
 }
 
@@ -111,6 +116,7 @@ export async function serverEventsFor(env, accountId) {
   return results.map((x) => JSON.parse(x.payload));
 }
 
+// Deletes expired demo accounts and their data; returns their ids so the caller revokes their grants.
 export async function purge(env) {
   const now = Date.now();
   const old = await env.DB.prepare('SELECT id FROM accounts WHERE expires_at <= ?1').bind(now).all();
@@ -121,5 +127,5 @@ export async function purge(env) {
       env.DB.prepare('DELETE FROM accounts WHERE id = ?1').bind(id),
     ]);
   }
-  return old.results.length;
+  return old.results.map((x) => x.id);
 }

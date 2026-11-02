@@ -11,11 +11,12 @@ Server URLs (fixed, do not change them between runs):
 
 Sample prompt (same as the page's first filer):
 
-> I'm single, no kids. I expect $58,400 in W-2 wages this year and about $6,050 of federal tax withheld. What will my federal refund be?
+> I'm single, no kids. I expect $58,400 in W-2 wages this year and about $6,050 of federal tax withheld. I'm under 65, not blind, nobody can claim me as a dependent, no other income or situations. What will my federal refund be?
 
 Expected card: tax year 2026, estimated refund **$1,219**, taxable income $42,300, federal income tax $4,831, withheld $6,050.
-If the model asks follow-up questions (65 or older, blind, dependent, other situations), answer no / none: the
-tool requires those answers on purpose.
+The prompt answers the questions the tool requires (65 or older, blind, dependent, other situations); in the
+Nov 2 Claude run they had to be given in the conversation. If the model still asks, answer no / none.
+After sign-up, ChatGPT came back to its home page in all three Nov 2 runs: reopen the conversation and press Save again.
 
 ## Claude (claude.ai, desktop browser)
 

@@ -2,22 +2,35 @@
 // Everything that comes from the OAuth client (name, domain, redirect host, scopes) is escaped.
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
-const KNOWN = {
-  'claude.ai': ['Claude', 'claude'],
-  'claude.com': ['Claude', 'claude'],
-  'chatgpt.com': ['ChatGPT', 'chatgpt'],
-  'openai.com': ['ChatGPT', 'chatgpt'],
-  'theaipipe.com': ['The web estimator', 'web'],
+// The apps this page may name. A name is shown only when it is proven: the client ID of a
+// Client ID Metadata Document published by that host, or, for a client that registered itself,
+// one of that host's exact redirect URIs (tokens can then only reach that host). Any other
+// client is "an unverified app", named by where it sends access, never by the name it gave.
+const CLIENT_IDS = {
+  'https://claude.ai/oauth/mcp-oauth-client-metadata': ['Claude', 'claude', 'claude.ai'],
+  'https://claude.ai/oauth/claude-code-client-metadata': ['Claude Code', 'claude', 'claude.ai'],
+  'https://chatgpt.com/oauth/client.json': ['ChatGPT', 'chatgpt', 'chatgpt.com'],
+  'https://theaipipe.com/demos/tax-estimate-mcp/oauth-client.json': ['The web estimator', 'web', 'theaipipe.com'],
+};
+const REDIRECT_URIS = {
+  'https://claude.ai/api/mcp/auth_callback': ['Claude', 'claude', 'claude.ai'],
+  'https://claude.com/api/mcp/auth_callback': ['Claude', 'claude', 'claude.com'],
+  'https://chatgpt.com/connector_platform_oauth_redirect': ['ChatGPT', 'chatgpt', 'chatgpt.com'],
 };
 
 export function requester(details) {
-  if (details.clientDomain) {
-    const host = details.clientDomain.toLowerCase();
-    const known = Object.entries(KNOWN).find(([d]) => host === d || host.endsWith('.' + d));
-    return { name: known ? known[1][0] : details.clientDomain, verified: true, domain: details.clientDomain, kind: known ? known[1][1] : 'other' };
-  }
-  return { name: details.clientName, verified: false, domain: null, kind: 'other' };
+  const known = CLIENT_IDS[details.clientId] || REDIRECT_URIS[details.redirectUri];
+  if (known) return { name: known[0], verified: true, domain: known[2], kind: known[1] };
+  return { name: `An unverified app (${details.redirectHost})`, verified: false, domain: null, kind: 'other' };
 }
+
+// What happens after this page, per host, as observed in the host runs of Nov 2, 2026.
+const AFTER = {
+  claude: 'After you continue, Claude returns to your conversation and finishes the save.',
+  chatgpt: 'After connecting, reopen your conversation and press Save again.',
+  web: 'After you continue, you are back on the demo page with the estimate saved.',
+  other: 'After you continue, go back to the app and press Save again.',
+};
 
 const STYLE = `
 :root{--paper:#f2f5f3;--card:#fff;--ink:#1c2a35;--muted:#566673;--rule:#c9d3da;--blue:#1f4e8c;--blue-ink:#fff;--green:#2f6b4f;--warn:#8a4b0f;}
@@ -37,6 +50,7 @@ button{font:inherit;font-weight:700;border-radius:8px;padding:13px 16px;width:10
 .primary{background:var(--blue);color:var(--blue-ink)}.secondary{background:transparent;color:var(--blue);margin-top:10px}
 .deny{background:transparent;border:none;color:var(--muted);text-decoration:underline;width:auto;padding:8px 0;margin-top:8px;font-weight:500}
 .warn{color:var(--warn);font-weight:600}
+.error{color:var(--warn);font-weight:600;border-left:3px solid var(--warn);padding:6px 10px;background:var(--card)}
 .or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem;margin:16px 0 10px}.or::before,.or::after{content:"";flex:1;border-top:1px solid var(--rule)}
 footer{font-size:.8rem;color:var(--muted);margin-top:22px}
 `;
@@ -50,13 +64,13 @@ function shell(title, body) {
 <footer>The AI Pipe demo service. Independent demo with sample tax data, not affiliated with FileTax.com. Demo accounts and saved estimates are deleted after 7 days.</footer></main></body></html>`;
 }
 
-export function authorizePage({ details, handle, existing }) {
+export function authorizePage({ details, handle, existing, error = null, email = '' }) {
   const who = requester(details);
   const scopes = details.scope.length ? details.scope : ['estimates:write'];
   const scopeText = scopes.map((s) => (s === 'estimates:write' ? 'Save tax estimates to this demo account' : esc(s))).join(', ');
   const appLine = who.verified
-    ? `<dd>${esc(who.name)}${who.domain && who.name !== who.domain ? ` (${esc(who.domain)})` : ''}</dd>`
-    : `<dd>${esc(who.name)} <span class="warn">(name not verified: this app registered itself)</span></dd>`;
+    ? `<dd>${esc(who.name)} (${esc(who.domain)})</dd>`
+    : `<dd>${esc(who.name)} <span class="warn">(it registered itself, so the name it gave is not shown)</span></dd>`;
   const existingBlock = existing ? `
   <form method="post" class="panel">
     <input type="hidden" name="handle" value="${esc(handle)}"><input type="hidden" name="action" value="continue">
@@ -67,7 +81,8 @@ export function authorizePage({ details, handle, existing }) {
   return shell('Create a demo account', `
   <p class="who">The AI Pipe demo service</p>
   <h1>${existing ? 'Save your estimate' : 'Create a demo account to save your estimate'}</h1>
-  <p>${esc(who.name)} is asking to save tax estimates to an account on this demo service. After you continue, you go straight back to where you were.</p>
+  <p>${esc(who.name)} is asking to save tax estimates to an account on this demo service. ${AFTER[who.kind]}</p>
+  ${error ? `<p class="error" role="alert">${esc(error)}</p>` : ''}
   <div class="panel"><dl>
     <dt>App asking</dt>${appLine}
     <dt>Sends access to</dt><dd>${esc(details.redirectHost)}</dd>
@@ -77,8 +92,8 @@ export function authorizePage({ details, handle, existing }) {
   <form method="post" class="${existing ? 'panel' : ''}">
     <input type="hidden" name="handle" value="${esc(handle)}"><input type="hidden" name="action" value="create">
     <label for="email">Email for the demo account</label>
-    <input id="email" name="email" type="email" required autocomplete="email" inputmode="email" placeholder="you@example.com">
-    <p class="hint">Not verified and never emailed. This is a temporary demo account, so there is no password or code to check: real sign-up at FileTax.com would add those steps.</p>
+    <input id="email" name="email" type="email" required autocomplete="email" inputmode="email" placeholder="you@example.com" value="${esc(email)}"${error ? ' aria-invalid="true" aria-describedby="email-hint"' : ''}>
+    <p class="hint" id="email-hint">Not verified and never emailed: any made-up address works. This is a temporary demo account, so there is no password or code to check: real sign-up at FileTax.com would add those steps.</p>
     <p style="margin-top:14px"><button class="${existing ? 'secondary' : 'primary'}" type="submit">Create account and save</button></p>
   </form>
   <form method="post"><input type="hidden" name="handle" value="${esc(handle)}"><input type="hidden" name="action" value="deny"><button class="deny" type="submit">Cancel and go back without saving</button></form>`);

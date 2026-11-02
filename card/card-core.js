@@ -5,7 +5,9 @@
 export const CARD_CSS = `
 .txc{--tx-paper:#ffffff;--tx-ink:#1c2a35;--tx-muted:#5a6a77;--tx-rule:#d5dde3;--tx-green:#22624a;--tx-green-soft:#e3efe8;--tx-owe:#8d4c12;--tx-owe-soft:#f6ebdf;--tx-blue:#1f4e8c;--tx-blue-ink:#ffffff;--tx-guilloche:#22624a;
   font:15px/1.45 "Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--tx-ink);background:var(--tx-paper);
-  border:1px solid var(--tx-rule);border-radius:14px;max-width:420px;overflow:hidden;font-variant-numeric:tabular-nums}
+  border:1px solid var(--tx-rule);border-radius:14px;max-width:640px;margin:0 auto;overflow:hidden;font-variant-numeric:tabular-nums}
+.txc[aria-busy=true] .txc-num,.txc[aria-busy=true] .txc-lines{opacity:.35;transition:opacity .15s}
+.txc-busy{margin:0;padding:12px 18px;font-size:.86rem;color:var(--tx-muted)}
 .txc[data-theme=dark]{--tx-paper:#18222a;--tx-ink:#e7eef2;--tx-muted:#a2b2bd;--tx-rule:#2f3f4a;--tx-green:#86c9a8;--tx-green-soft:#1d3229;--tx-owe:#e6a969;--tx-owe-soft:#3a2a1b;--tx-blue:#79a8e6;--tx-blue-ink:#0e1822;--tx-guilloche:#86c9a8}
 .txc *{box-sizing:border-box}
 .txc-top{position:relative;padding:16px 18px 14px;background:var(--tx-green-soft);overflow:hidden}
@@ -95,6 +97,7 @@ export function createCard(root, { theme = 'light', hostName = null, onSave, onA
 
   function renderEstimate(e) {
     current = e;
+    el.removeAttribute('aria-busy');
     el.dataset.outcome = e.outcome || '';
     if (e.status === 'unsupported_scenario') {
       el.innerHTML = `<div class="txc-refused"><p class="txc-year">Tax year ${esc(e.tax_year)}</p><h3>No estimate for this case</h3>
@@ -148,25 +151,51 @@ export function createCard(root, { theme = 'light', hostName = null, onSave, onA
       return;
     }
     if (state === 'error') {
-      box.innerHTML = `<p class="txc-msg" role="alert" style="margin-top:0">${esc(info.message)}</p><button class="txc-btn txc-quiet" type="button" data-testid="retry">Try again</button>`;
-      box.querySelector('[data-testid=retry]').addEventListener('click', () => onSave && onSave(current.estimate_id));
+      box.innerHTML = `<p class="txc-msg" role="alert" style="margin-top:0">${esc(info.message)}</p>${info.retry === false ? '' : '<button class="txc-btn txc-quiet" type="button" data-testid="retry">Try again</button>'}`;
+      const retry = box.querySelector('[data-testid=retry]');
+      if (retry) retry.addEventListener('click', () => onSave && onSave(current.estimate_id));
       return;
     }
     box.innerHTML = `<button class="txc-btn" type="button" data-testid="save">Save estimate</button><p class="txc-msg" role="status" aria-live="polite"></p>`;
     box.querySelector('[data-testid=save]').addEventListener('click', () => onSave && onSave(current.estimate_id));
   }
 
-  // A save_estimate result can arrive on its own (the host ran the tool after sign-in).
+  // A save_estimate result can arrive on its own (the host ran the tool after sign-in). It carries
+  // the assumptions, sources and engine version, so the card is the same as after the estimate.
   function renderSaved(s) {
     if (!current || current.estimate_id !== s.estimate_id) {
-      renderEstimate({ status: 'estimated', estimate_id: s.estimate_id, ...s.estimate, parameters_note: s.estimate.parameters_status === 'draft' ? 'Based on the IRS draft 2026 tables (Aug 28, 2026).' : '', assumptions: [], sources: [] });
+      renderEstimate({ status: 'estimated', estimate_id: s.estimate_id, assumptions: [], sources: [], ...s.estimate });
     }
     setState('saved', { record: s });
+  }
+
+  // New inputs are being computed: the card on screen no longer matches them.
+  function showBusy(message = 'Computing the estimate…') {
+    el.setAttribute('aria-busy', 'true');
+    const box = act();
+    if (box) {
+      box.dataset.state = 'busy';
+      box.innerHTML = `<button class="txc-btn" type="button" data-testid="save" disabled>Save estimate</button><p class="txc-msg" role="status" aria-live="polite">${esc(message)}</p>`;
+    } else {
+      el.innerHTML = `<p class="txc-busy" role="status">${esc(message)}</p>`;
+    }
+  }
+
+  // The estimate itself could not be fetched: say so, and offer to try again.
+  function showFailure(message, onRetry) {
+    current = null;
+    el.removeAttribute('aria-busy');
+    el.dataset.outcome = '';
+    el.innerHTML = `<div class="txc-refused"><h3>No estimate yet</h3><p class="txc-msg" role="alert" style="margin-top:0">${esc(message)}</p>
+      <button class="txc-btn txc-quiet" type="button" data-testid="retry-estimate">Try again</button></div>`;
+    el.querySelector('[data-testid=retry-estimate]').addEventListener('click', () => onRetry && onRetry());
   }
 
   return {
     showEstimate: renderEstimate,
     showSaved: renderSaved,
+    showBusy,
+    showFailure,
     setState,
     setTheme: (t) => { el.dataset.theme = t === 'dark' ? 'dark' : 'light'; },
     get estimate() { return current; },

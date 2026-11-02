@@ -30,12 +30,12 @@ async function save(estimateId) {
   try {
     const r = await app.callServerTool({ name: 'save_estimate', arguments: { estimate_id: estimateId } });
     if (r.structuredContent?.status === 'saved') return card.setState('saved', { record: r.structuredContent });
-    if (isAuthError(r)) return card.setState('signin', { message: 'Saving needs a demo account. The host asks you to sign up, then saves it.' });
+    if (isAuthError(r)) return card.setState('signin', { message: 'Saving needs a demo account. Connect one, then press Save again if the card does not update.' });
     card.setState('error', { message: r.structuredContent?.message || r.content?.[0]?.text || 'The estimate was not saved.' });
   } catch {
     // Claude answers an unauthenticated Save with HTTP 401; a host that does not start sign-in from
     // a card call surfaces it here. Asking in the conversation goes through the model path instead.
-    card.setState('signin', { message: 'Saving needs a demo account.' });
+    card.setState('signin', { message: 'Saving needs a demo account. Connect one, then press Save again if the card does not update.' });
   }
 }
 

@@ -24,7 +24,59 @@
 <main>
   <section class="wrap hero" aria-labelledby="h1">
     <h1 id="h1"><span>Estimate first.</span> <span>Sign up at Save.</span> <span>That same estimate, saved.</span></h1>
-    <p class="lede">A working app for ChatGPT and Claude with two tools: a federal refund estimate that needs no account, and a Save that creates an account through OAuth and stores that exact estimate. Below is the same card and the same sign-up, playable now.</p>
+    <ul class="status" id="host-status" aria-label="Where it stands in each host">
+      <li class="st-ok"><span class="st-mark" aria-hidden="true"></span><span><strong>Claude:</strong> returns to the conversation and saves automatically.</span></li>
+      <li class="st-part"><span class="st-mark" aria-hidden="true"></span><span><strong>ChatGPT:</strong> account linking works; reopen the conversation and press Save again.</span></li>
+    </ul>
+    <p class="lede">A working app for ChatGPT and Claude with two tools: a federal refund estimate that needs no account, and a Save that creates a demo account through OAuth and stores that exact estimate. Filmed in both hosts below, then playable on this page with the same card and the same sign-up.</p>
+  </section>
+
+  <section class="wrap hosts" id="hosts" aria-labelledby="hosts-h">
+    <div class="gutter"><h2 id="hosts-h">In Claude and ChatGPT</h2></div>
+    <div class="hosts-body">
+      <div class="tabs" role="tablist" aria-label="Host">
+        <button role="tab" id="tab-claude" aria-controls="panel-claude" aria-selected="true">Claude</button>
+        <button role="tab" id="tab-chatgpt" aria-controls="panel-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
+      </div>
+      <div class="panel" role="tabpanel" id="panel-claude" aria-labelledby="tab-claude">
+        <div class="rec" data-host="claude"></div>
+        <div class="side">
+          <div class="result" data-host="claude"></div>
+          <div class="add">
+            <h3>Add it to your Claude</h3>
+            <p><a class="btn" href="https://claude.ai/customize/connectors?modal=add-custom-connector&amp;connectorName=Tax%20estimate%20demo&amp;connectorUrl=https%3A%2F%2Ftax-mcp-demo.theaipipe.com%2Fmcp%2Fclaude" target="_blank" rel="noopener">Add to Claude</a></p>
+            <p class="small">Opens Claude's Add custom connector dialog with the name and URL filled in; you confirm there. Server URL: <code class="copy" data-copy="https://tax-mcp-demo.theaipipe.com/mcp/claude">https://tax-mcp-demo.theaipipe.com/mcp/claude</code>.</p>
+          </div>
+        </div>
+      </div>
+      <div class="panel" role="tabpanel" id="panel-chatgpt" aria-labelledby="tab-chatgpt" hidden>
+        <div class="rec" data-host="chatgpt"></div>
+        <div class="side">
+          <div class="result" data-host="chatgpt"></div>
+          <div class="add">
+            <h3>Add it to your ChatGPT</h3>
+            <ol>
+              <li>Open <a href="https://chatgpt.com/plugins" target="_blank" rel="noopener">ChatGPT Plugins</a>, select the plus button, then Add custom MCP server.</li>
+              <li>Server URL: <code class="copy" data-copy="https://tax-mcp-demo.theaipipe.com/mcp/chatgpt">https://tax-mcp-demo.theaipipe.com/mcp/chatgpt</code></li>
+              <li>Authentication: OAuth or no authentication. Review the warning, create it, install it, then mention it with @ in a chat.</li>
+            </ol>
+            <p class="small">ChatGPT on the web; workspace permissions for custom MCP servers apply.</p>
+          </div>
+        </div>
+      </div>
+      <div class="after-rec">
+        <p class="call">Questions about this build, or what it takes on FileTax.com's engine and accounts? <a href="https://cal.theaipipe.com">Book a 15-minute call</a></p>
+        <details class="test-details">
+          <summary>Test details: every timed run, and what was checked</summary>
+          <div class="td-grid">
+            <div><h3>Claude, Save to saved</h3><ul id="runs-claude"></ul></div>
+            <div><h3>ChatGPT, Save to saved</h3><ul id="runs-chatgpt"></ul></div>
+          </div>
+          <h3>Checked so far</h3>
+          <ul id="verified-list"></ul>
+        </details>
+      </div>
+    </div>
   </section>
 
   <section class="wrap twin" id="try" aria-labelledby="try-h">
@@ -40,11 +92,11 @@
         <details class="edit">
           <summary>Change the wages or withholding</summary>
           <div class="edit-row">
-            <label>Full-year W-2 wages<input id="wages" type="number" inputmode="numeric" min="0" step="100"></label>
-            <label>Federal tax withheld<input id="withheld" type="number" inputmode="numeric" min="0" step="50"></label>
+            <label>Full-year W-2 wages<input id="wages" type="text" inputmode="numeric" autocomplete="off" aria-describedby="wages-error"><span class="field-error" id="wages-error" aria-live="polite"></span></label>
+            <label>Federal tax withheld<input id="withheld" type="text" inputmode="numeric" autocomplete="off" aria-describedby="withheld-error"><span class="field-error" id="withheld-error" aria-live="polite"></span></label>
           </div>
           <button type="button" class="link-btn" id="recalc">Estimate again</button>
-          <p class="small">Cases the stand-in engine does not cover (the Earned Income Credit range, for one) come back refused, with the reason.</p>
+          <p class="small">Whole dollars for the full year. Cases the stand-in engine does not cover (the Earned Income Credit range, for one) come back refused, with the reason.</p>
         </details>
         <figure class="prompt">
           <figcaption>What someone types in ChatGPT or Claude</figcaption>
@@ -60,45 +112,11 @@
           <li data-step="signup"><span class="j-dot"></span><span class="j-text">Demo account created on the sign-up page</span><span class="j-time"></span></li>
           <li data-step="saved"><span class="j-dot"></span><span class="j-text">Back on this page, the same estimate saved</span><span class="j-time"></span></li>
         </ol>
-        <p class="small twin-note" id="twin-note">The sign-up page belongs to the demo service on tax-mcp-demo.theaipipe.com. It asks for an email only, does not verify it, and deletes the account after 7 days. FileTax.com's own sign-up would add its checks, so the time shown here measures this demo, not that flow.</p>
+        <p class="small twin-note" id="twin-note">The sign-up page belongs to the demo service on tax-mcp-demo.theaipipe.com. It asks for an email only (a made-up one works), does not verify it, and deletes the account after 7 days. FileTax.com's own sign-up would add its checks, so the time shown here measures this demo, not that flow.</p>
         <details class="events" id="events" hidden>
           <summary>Server event prepared for Meta (not sent)</summary>
           <pre id="events-json"></pre>
         </details>
-      </div>
-    </div>
-  </section>
-
-  <section class="wrap hosts" id="hosts" aria-labelledby="hosts-h">
-    <div class="gutter"><h2 id="hosts-h">In ChatGPT and Claude</h2></div>
-    <div class="hosts-body">
-      <div class="tabs" role="tablist" aria-label="Host">
-        <button role="tab" id="tab-chatgpt" aria-controls="panel-chatgpt" aria-selected="true">ChatGPT</button>
-        <button role="tab" id="tab-claude" aria-controls="panel-claude" aria-selected="false" tabindex="-1">Claude</button>
-      </div>
-      <div class="panel" role="tabpanel" id="panel-chatgpt" aria-labelledby="tab-chatgpt">
-        <div class="rec" data-host="chatgpt"></div>
-        <div class="add">
-          <h3>Add it to your ChatGPT</h3>
-          <ol>
-            <li>Open <a href="https://chatgpt.com/plugins" target="_blank" rel="noopener">ChatGPT Plugins</a>, select the plus button, then Add custom MCP server.</li>
-            <li>Server URL: <code class="copy" data-copy="https://tax-mcp-demo.theaipipe.com/mcp/chatgpt">https://tax-mcp-demo.theaipipe.com/mcp/chatgpt</code></li>
-            <li>Authentication: OAuth or no authentication. Review the warning, create it, install it, then mention it with @ in a chat.</li>
-          </ol>
-          <p class="small">ChatGPT on the web; workspace permissions for custom MCP servers apply.</p>
-        </div>
-      </div>
-      <div class="panel" role="tabpanel" id="panel-claude" aria-labelledby="tab-claude" hidden>
-        <div class="rec" data-host="claude"></div>
-        <div class="add">
-          <h3>Add it to your Claude</h3>
-          <p><a class="btn" href="https://claude.ai/customize/connectors?modal=add-custom-connector&amp;connectorName=Tax%20estimate%20demo&amp;connectorUrl=https%3A%2F%2Ftax-mcp-demo.theaipipe.com%2Fmcp%2Fclaude" target="_blank" rel="noopener">Add to Claude</a></p>
-          <p class="small">Opens Claude's Add custom connector dialog with the name and URL filled in; you confirm there. Server URL: <code class="copy" data-copy="https://tax-mcp-demo.theaipipe.com/mcp/claude">https://tax-mcp-demo.theaipipe.com/mcp/claude</code>.</p>
-        </div>
-      </div>
-      <div class="verified">
-        <h3>Checked so far</h3>
-        <ul id="verified-list"></ul>
       </div>
     </div>
   </section>

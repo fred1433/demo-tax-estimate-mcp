@@ -1,7 +1,7 @@
 // Builds page/site/proofs.html from the test outputs (tests/out/*.json), the fixtures and the
 // engine. Every number on that page comes from a file or a function, not from hand-typed text.
 import { readFileSync, writeFileSync, existsSync, copyFileSync, mkdirSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { estimate } from '../app/src/engine.js';
 import { ENGINE } from '../app/src/params.js';
 
@@ -17,10 +17,17 @@ const e2eLocal = rd('tests/out/e2e-local.json');
 const twin = rd('tests/out/twin-production.json');
 const privProd = rd('tests/out/privacy-production.json');
 const privLocal = rd('tests/out/privacy-local.json');
+const twinFixes = rd('tests/out/twin-fixes-production.json');
+const hostRuns = rd('page/site/data/host-runs.json');
 
-// unit tests: run them now and keep the counts
-const unitOut = execFileSync(process.execPath, ['--test', 'tests/'], { encoding: 'utf8' });
-const unit = { pass: Number(/ℹ pass (\d+)/.exec(unitOut)[1]), fail: Number(/ℹ fail (\d+)/.exec(unitOut)[1]) };
+// Unit tests: run them now and keep the counts. One test reads this page itself, so it runs once
+// the page is written, and the page is then written again with the final counts.
+const SELF = 'the proofs page reports the host runs';
+const runTests = (flag) => {
+  const out = spawnSync(process.execPath, ['--test', flag, 'tests/'], { encoding: 'utf8' }).stdout;
+  return { pass: Number(/ℹ pass (\d+)/.exec(out)[1]), fail: Number(/ℹ fail (\d+)/.exec(out)[1]) };
+};
+const unit = runTests(`--test-skip-pattern=${SELF}`);
 const tableRows = (y) => readFileSync(`reference/irs_tax_table_${y}.csv`, 'utf8').trim().split('\n').length - 1;
 
 const STATUS = { single: 'Single', married_filing_jointly: 'Married jointly', head_of_household: 'Head of household' };
@@ -41,10 +48,22 @@ const refusals = fx.refusals.map((p) => {
   return `<li><strong>${esc(p.expect)}</strong>: ${esc(r.reasons.find((x) => x.code === p.expect)?.message)}</li>`;
 }).join('\n');
 
-const checks = (run) => (run ? run.results.map((x) => `<li class="${x.ok ? 'ok' : 'ko'}">${x.ok ? 'Pass' : 'Fail'}: ${esc(x.name)}${x.note ? ` <span class="m">(${esc(String(x.note).slice(0, 220))})</span>` : ''}</li>`).join('\n') : '<li>Not run.</li>');
+// Notes longer than 220 characters are cut at a word, with an explicit ellipsis.
+const cut = (t, n = 220) => { t = String(t); if (t.length <= n) return t; const i = t.lastIndexOf(' ', n); return `${t.slice(0, i > n / 2 ? i : n)} […]`; };
+const checks = (run) => (run ? run.results.map((x) => `<li class="${x.ok ? 'ok' : 'ko'}">${x.ok ? 'Pass' : 'Fail'}: ${esc(x.name)}${x.note ? ` <span class="m">[${esc(cut(x.note))}]</span>` : ''}</li>`).join('\n') : '<li>Not run.</li>');
+
+// The host runs, written from page/site/data/host-runs.json only.
+const NAME = { claude: 'Claude', chatgpt: 'ChatGPT' };
+const hostBlock = (host) => {
+  const h = hostRuns?.[host];
+  if (!h || !h.video) return `<li><strong>${NAME[host]}:</strong> not run yet.</li>`;
+  const outcome = h.status === 'recorded' ? 'estimate, sign-up and the same Save finished in the same conversation, filmed.' : `estimate, account linking and the saved record, filmed. ${esc(h.why_pending)}`;
+  const times = (h.runs || []).map((r) => `${esc(r.label)}: ${esc(r.seconds)} s`).join('; ');
+  return `<li><strong>${NAME[host]}</strong>, ${esc(h.date)}, ${esc(h.surface)}: ${outcome} ${esc(h.path)} Timed from Save to saved: ${times}. ${h.repeat_save ? esc(h.repeat_save) : ''}</li>`;
+};
 
 const provenance = (y) => ref.provenance[y];
-const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+const page = () => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tax estimate demo proofs</title><meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="icon" href="favicon.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -75,7 +94,10 @@ code{font-size:.82em}
 <ul class="checks">${checks(e2eProd)}</ul>
 <p><strong>Web twin in a real browser</strong> (${esc(twin?.browser)}), ${twin ? day(twin.at) : 'not run'}: ${twin ? `${twin.pass} of ${twin.total} checks passed` : ''}.</p>
 <ul class="checks">${checks(twin)}</ul>
-<p><strong>Inside chatgpt.com and claude.ai:</strong> not yet run. The demo page shows those recordings once they exist; nothing here claims them.</p>
+<p><strong>Page regression checks</strong> (Chromium, network faults injected: a late answer, a lost Save response, failed calls), ${twinFixes ? `${day(twinFixes.at)}: ${twinFixes.pass} of ${twinFixes.total} checks passed` : 'not run'}.</p>
+<ul class="checks">${checks(twinFixes)}</ul>
+<p><strong>Inside claude.ai and chatgpt.com</strong>, run by hand in a logged-in desktop browser (from <code>data/host-runs.json</code>):</p>
+<ul>${hostBlock('claude')}${hostBlock('chatgpt')}</ul>
 
 <h2>Tax references</h2>
 <p>Engine ${esc(ENGINE.version)}, a stand-in kept small on purpose. Expected values come from <code>reference/derive_expected.py</code>, which reads the IRS PDFs (Tax Table rows and Tax Computation Worksheet rows from the text of the publications) and follows Form 1040 and Schedule 8812 by hand, in a different language from the engine. The engine also reproduces every Tax Table row of both years for single, married filing jointly and head of household (${tableRows(2026)} rows for 2026, ${tableRows(2025)} for 2025). Unit tests: ${unit.pass} passed, ${unit.fail} failed.</p>
@@ -90,7 +112,7 @@ code{font-size:.82em}
 
 <h2>Logs and the Meta event</h2>
 <p>The Worker writes one kind of log line: a closed list of fields (event, surface, outcome, duration, a random correlation id, a code). Library output is replaced by a fixed marker. Invocation logs and traces are off. Workers Logs still attach the request URL to each line, so requests whose URL carries a query string (the OAuth authorization request) write no line at all. The page Worker, which receives the OAuth callback, has logging off.</p>
-<p><strong>Check on the live Worker</strong>${privProd ? `, ${day(privProd.at)}` : ''}: ${privProd ? `${esc(privProd.steps.length)} steps (estimate, refusal, validation error, sign-in refused, sign-up, Save, repeated Save, tampered reference, invalid token, token refresh, on both endpoints) with recognisable values, then ${esc(privProd.needles_searched)} values searched in ${esc(privProd.worker_log_lines)} lines read back from ${esc(privProd.source)}: <strong>${privProd.hits.length} found</strong>. Fields seen: ${esc(privProd.fields_seen.join(', '))}.` : 'not run.'}</p>
+<p><strong>Check on the live Worker</strong>${privProd ? `, ${day(privProd.at)}` : ''}: ${privProd ? `${esc(privProd.steps.length)} steps (estimate, refusal, validation error, sign-in refused, sign-up, Save, repeated Save, tampered reference, invalid token, token refresh, on both MCP endpoints, then estimate, refusal, sign-up with its OAuth callback, Save, repeated Save and invalid token on the web twin's API) with recognisable values, then ${esc(privProd.needles_searched)} values searched in ${esc(privProd.worker_log_lines)} lines read back from ${esc(privProd.source)}: <strong>${privProd.hits.length} found</strong>. Fields seen: ${esc(privProd.fields_seen.join(', '))}.` : 'not run.'}</p>
 ${privLocal ? `<p>Same check on a local run (with the expired-reference case): ${privLocal.hits.length} found in ${privLocal.worker_log_lines} lines.</p>` : ''}
 <p>Meta Conversions API: preview only, never sent. After a confirmed sign-up (<code>CompleteRegistration</code>) and a confirmed first Save (<code>Lead</code>), the server stores the event it would send, deduplicated by <code>event_id</code>. It holds a hashed email, a hashed account id, the surface and the action source; no amount, no refund or balance category, no tax year, no IP address or user agent, since on ChatGPT and Claude the request comes from the host's servers, not from the taxpayer. No compliance claim is made.</p>
 
@@ -110,11 +132,16 @@ ${privLocal ? `<p>Same check on a local run (with the expired-reference case): $
 <li>A sign-in path for an existing account with a password: OpenAI asks for a login and password for a fully featured demo account and rejects plugins whose review needs a new sign-up (<a href="https://developers.openai.com/plugins/plugin-guidelines">plugin guidelines</a>). The demo here only creates accounts.</li>
 <li>OpenAI: verified developer identity, plugin ZIP with metadata, domain verification of the MCP host, five positive and three negative test cases, a video walkthrough, support, privacy and terms URLs (<a href="https://developers.openai.com/plugins/deploy/submission">submission guide</a>).</li>
 <li>Anthropic: test credentials for a populated account, public documentation, privacy policy and support contact, and carousel screenshots for an MCP App (<a href="https://claude.com/docs/connectors/building/submission">submission guide</a>).</li>
+<li>ChatGPT: after account linking, the run came back to ChatGPT's home page instead of the conversation (3 runs of 3). The cause is not diagnosed yet; finding it is the next step before a submission.</li>
+<li>The journey on an iPhone (ChatGPT and Claude apps, or their mobile web): not tested. The runs above are desktop browser runs.</li>
 <li>Why this demo is not submitted: it would list an app for FileTax.com's users under someone else's name, and OpenAI does not accept demo plugins (<a href="https://developers.openai.com/plugins/plugin-guidelines">plugin guidelines</a>).</li>
 </ul>
 </main></body></html>
 `;
-writeFileSync('page/site/proofs.html', html);
+writeFileSync('page/site/proofs.html', page());
+const self = runTests(`--test-name-pattern=${SELF}`);
+unit.pass += self.pass; unit.fail += self.fail;
+writeFileSync('page/site/proofs.html', page());
 mkdirSync('page/site/data', { recursive: true });
 if (e2eProd) copyFileSync('tests/out/e2e-production.json', 'page/site/data/e2e-production.json');
 console.log(`proofs.html written; unit ${unit.pass}/${unit.pass + unit.fail}`);

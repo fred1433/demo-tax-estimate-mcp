@@ -1,12 +1,14 @@
 // Privacy check on real telemetry. Plays success, refusal, validation error, sign-in denial,
 // sign-in, Save, repeated Save, tampered and expired references and an invalid token with
-// recognisable values, then searches the captured logs for every one of them.
+// recognisable values, on the Claude and ChatGPT endpoints and on the web twin's API (its OAuth
+// callback included), then searches the captured logs for every value either run handled.
 //
 // Usage:
 //   node tests/privacy_canary.mjs <base-url> --log <file written by wrangler dev>   (local run)
 //   node tests/privacy_canary.mjs <base-url> --cf                                    (deployed Worker: queries Workers Logs)
 import { Client, StreamableHTTPClientTransport, UnauthorizedError, auth } from '@modelcontextprotocol/client';
 import { readFileSync, statSync, writeFileSync, mkdirSync } from 'node:fs';
+import { createHash, randomBytes } from 'node:crypto';
 
 const BASE = process.argv[2].replace(/\/$/, '');
 const LOG = process.argv.includes('--log') ? process.argv[process.argv.indexOf('--log') + 1] : null;
@@ -19,8 +21,8 @@ const canary = {
   email: `canary-${tag}@example.org`,
 };
 const profile = { tax_year: 2026, filing_status: 'single', w2_wages: canary.wages, federal_income_tax_withheld: canary.withheld, qualifying_children_under_17: 0, other_dependents: 0, taxpayer_age_65_or_older: false, taxpayer_blind: false, can_be_claimed_as_dependent: false, other_situations: ['none'] };
-const seen = {}; // every secret-ish value the run handles, to search for afterwards
-const remember = (k, v) => { if (v) seen[k] = String(v); };
+const seen = []; // every secret-ish value the runs handle, all kept (no host overwrites another's)
+const remember = (k, v) => { if (v) seen.push([k, String(v)]); };
 const startedAt = Date.now();
 const logStart = LOG ? statSync(LOG).size : 0;
 
@@ -78,6 +80,29 @@ for (const surface of ['claude', 'chatgpt']) {
   await auth(p, { serverUrl: `${BASE}/mcp/${surface}` }).catch(() => {}); steps.push(`${surface}: refresh`);
 }
 
+// Web twin's API: the same OAuth server, resource /api/web, PKCE, then estimate and Save.
+{
+  const reg = await (await fetch(`${BASE}/oauth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_name: `canary web ${tag}`, redirect_uris: [REDIRECT], grant_types: ['authorization_code', 'refresh_token'], response_types: ['code'], token_endpoint_auth_method: 'none', application_type: 'native' }) })).json();
+  remember('client_id', reg.client_id);
+  const verifier = randomBytes(32).toString('base64url'); remember('code_verifier', verifier);
+  const challenge = createHash('sha256').update(verifier).digest('base64url'); remember('code_challenge', challenge);
+  const state = randomBytes(12).toString('base64url'); remember('oauth_state', state);
+  const u = new URL(`${BASE}/authorize`);
+  Object.entries({ response_type: 'code', client_id: reg.client_id, redirect_uri: REDIRECT, scope: 'estimates:write', state, code_challenge: challenge, code_challenge_method: 'S256', resource: `${BASE}/api/web` }).forEach(([k, v]) => u.searchParams.set(k, v));
+  const est = await (await fetch(`${BASE}/api/web/estimate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(profile) })).json();
+  remember('estimate_id_web', est.estimate_id); steps.push(`web: estimate ${est.status}`);
+  await fetch(`${BASE}/api/web/estimate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...profile, other_situations: ['tips'] }) }); steps.push('web: refusal');
+  const anon = await fetch(`${BASE}/api/web/save`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estimate_id: est.estimate_id }) }); steps.push(`web: save without token ${anon.status}`);
+  const q = await browser(u, 'create', `web-${canary.email}`);
+  remember('web_email', `web-${canary.email}`);
+  const tok = await (await fetch(`${BASE}/oauth/token`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'authorization_code', code: q.get('code'), redirect_uri: REDIRECT, client_id: reg.client_id, code_verifier: verifier, resource: `${BASE}/api/web` }) })).json();
+  remember('access_token', tok.access_token); remember('refresh_token', tok.refresh_token);
+  const save = async (t) => (await fetch(`${BASE}/api/web/save`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` }, body: JSON.stringify({ estimate_id: est.estimate_id }) })).json().catch(() => ({}));
+  const s1 = await save(tok.access_token); remember('record_id_web', s1.record_id); remember('account_id_web', s1.account?.id);
+  await save(tok.access_token); steps.push(`web: signed up, saved ${s1.status}, saved again`);
+  await save(`${tok.access_token}x`); steps.push('web: invalid token');
+}
+
 async function collect() {
   if (LOG) {
     await new Promise((r) => setTimeout(r, 1500));
@@ -97,10 +122,11 @@ async function collect() {
 }
 
 const logs = await collect();
-const needles = { ...Object.fromEntries(Object.entries(seen)), email: canary.email, wages: String(canary.wages), wages_fmt: canary.wages.toLocaleString('en-US'), withheld: String(canary.withheld), withheld_fmt: canary.withheld.toLocaleString('en-US'), amount: String(canary.amount), taxable: String(canary.taxable), tax: String(canary.tax) };
+const needles = [...seen, ['email', canary.email], ['wages', String(canary.wages)], ['wages_fmt', canary.wages.toLocaleString('en-US')], ['withheld', String(canary.withheld)], ['withheld_fmt', canary.withheld.toLocaleString('en-US')], ['amount', String(canary.amount)], ['taxable', String(canary.taxable)], ['tax', String(canary.tax)]]
+  .filter(([, v], i, all) => all.findIndex(([, w]) => w === v) === i);
 const hits = [];
 const coincidences = [];
-for (const [k, v] of Object.entries(needles)) {
+for (const [k, v] of needles) {
   if (!v || v.length < 4) continue;
   for (const l of logs.worker) {
     const i = l.indexOf(v);
@@ -113,9 +139,9 @@ for (const [k, v] of Object.entries(needles)) {
   }
 }
 const devHits = [];
-for (const [k, v] of Object.entries(needles)) for (const l of logs.devServer) if (v && v.length >= 4 && l.includes(v)) devHits.push({ needle: k, line: l.slice(0, 160) });
+for (const [k, v] of needles) for (const l of logs.devServer) if (v && v.length >= 4 && l.includes(v)) devHits.push({ needle: k, line: l.slice(0, 160) });
 const keys = new Set(); for (const l of logs.worker) { try { const o = JSON.parse(l); for (const k of Object.keys(o.source ?? o)) keys.add(k); } catch {} }
-const report = { target: BASE, at: new Date().toISOString(), source: logs.source, steps, worker_log_lines: logs.worker.length, needles_searched: Object.keys(needles).length, hits, coincidences_inside_platform_ids: coincidences, fields_seen: [...keys].sort(), dev_server_lines_with_values: devHits.length };
+const report = { target: BASE, at: new Date().toISOString(), source: logs.source, steps, worker_log_lines: logs.worker.length, needles_searched: needles.length, hits, coincidences_inside_platform_ids: coincidences, fields_seen: [...keys].sort(), dev_server_lines_with_values: devHits.length };
 console.log(JSON.stringify({ ...report, sample: logs.worker.slice(0, 5) }, null, 2));
 mkdirSync(new URL('./out/', import.meta.url), { recursive: true });
 writeFileSync(new URL(`./out/privacy-${LOG ? 'local' : 'production'}.json`, import.meta.url), JSON.stringify(report, null, 2));

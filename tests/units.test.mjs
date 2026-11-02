@@ -48,7 +48,7 @@ test('Meta preview carries no amount, no tax detail, no IP, and hashes identifie
   }
   const d = ev.payload.data[0];
   assert.equal(d.action_source, 'chat');
-  assert.equal(d.event_id, 'estimate_saved_sav_abc');
+  assert.match(d.event_id, /^estimate_saved_[0-9a-f]{32}$/); // hashed: no record id in clear
   assert.match(d.user_data.em[0], /^[0-9a-f]{64}$/);
 });
 

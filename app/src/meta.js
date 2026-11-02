@@ -14,7 +14,9 @@ export async function buildServerEvent({ kind, accountId, email, surface, eventK
   const event = {
     event_name: EVENT_NAME[kind],
     event_time: Math.floor(now / 1000),
-    event_id: `${kind}_${eventKey}`, // deduplication key with event_name: one per account or per saved record
+    // Deduplication key with event_name: one per account or per saved record, hashed so that no
+    // account or record id travels in clear next to the hashed external_id.
+    event_id: `${kind}_${(await sha256Hex(`${kind}:${eventKey}`)).slice(0, 32)}`,
     action_source: surface === 'web' ? 'website' : 'chat',
     user_data: {
       em: [await sha256Hex(String(email).trim().toLowerCase())],

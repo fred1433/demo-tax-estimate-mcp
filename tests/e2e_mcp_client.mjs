@@ -4,12 +4,24 @@
 // during authorization, resumption of the same Save call, idempotent Save, owner from the token,
 // explicit errors. The browser part of OAuth (the sign-up form) is driven with plain HTTP.
 //
-// Usage: node tests/e2e_mcp_client.mjs <base-url> [--secret <ESTIMATE_SECRET for the expiry test>]
+// Usage: node tests/e2e_mcp_client.mjs <base-url> [--secret <ESTIMATE_SECRET for the expiry test>] [--local-d1]
+// --local-d1 (local run only): also expires a demo account and drops a Meta event row in the local
+// D1 database through wrangler, to check the expired-account challenge and the event repair.
 import { Client, StreamableHTTPClientTransport, UnauthorizedError, auth } from '@modelcontextprotocol/client';
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { createHash, randomBytes } from 'node:crypto';
 
 const BASE = (process.argv[2] || 'http://127.0.0.1:8787').replace(/\/$/, '');
 const SECRET = process.argv.includes('--secret') ? process.argv[process.argv.indexOf('--secret') + 1] : null;
+const LOCAL_D1 = process.argv.includes('--local-d1') && BASE.includes('127.0.0.1');
+function d1(sql) {
+  const out = execFileSync('npx', ['wrangler', 'd1', 'execute', 'tax-mcp-demo', '--local', '--json', '--command', sql], { cwd: new URL('../app/', import.meta.url), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  return JSON.parse(out)[0].results;
+}
+const H = { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' };
+const rpc = (method, params = {}, id = 1) => JSON.stringify({ jsonrpc: '2.0', id, method, params });
+const noErrorCode = (www) => !!www && /resource_metadata="/.test(www) && /scope="estimates:write"/.test(www) && !/error=/.test(www);
 const REDIRECT = 'http://127.0.0.1:53682/callback';
 const fx = JSON.parse(readFileSync(new URL('./fixtures/profiles.json', import.meta.url)));
 const expected = JSON.parse(readFileSync(new URL('./fixtures/expected.json', import.meta.url))).expected;
@@ -105,7 +117,11 @@ async function run(surface) {
   }
   const res = await client.readResource({ uri: 'ui://tax-estimate/card.html' });
   const c0 = res.contents[0];
-  log(`${S} card resource is text/html;profile=mcp-app`, c0.mimeType === 'text/html;profile=mcp-app' && c0.text.length > 1000, { note: surface === 'claude' ? `ui.domain ${c0._meta?.ui?.domain}` : 'no ui.domain (ChatGPT default sandbox)' });
+  log(`${S} card resource is text/html;profile=mcp-app`, c0.mimeType === 'text/html;profile=mcp-app' && c0.text.length > 1000, { note: `ui.domain ${c0._meta?.ui?.domain}` });
+  if (surface === 'chatgpt') {
+    const m = c0._meta || {};
+    log('CHATGPT card declares its CSP and domain for ChatGPT (ui.csp, ui.domain, openai/widgetCSP, openai/widgetDomain)', m.ui?.csp?.resourceDomains?.includes('https://fonts.gstatic.com') && m['openai/widgetCSP']?.resource_domains?.includes('https://fonts.gstatic.com') && Array.isArray(m['openai/widgetCSP']?.connect_domains) && m['openai/widgetDomain'] === BASE && m.ui?.domain === m['openai/widgetDomain'], { note: `widgetDomain ${m['openai/widgetDomain']}` });
+  }
 
   // 1. anonymous estimate
   const t0 = Date.now();
@@ -114,6 +130,8 @@ async function run(surface) {
   log(`${S} anonymous estimate (no token)`, sc.status === 'estimated' && sc.amount === expected.p01.amount && sc.outcome === expected.p01.outcome && prov._s.tokens === undefined, { note: `${sc.outcome} ${sc.amount}, ${Date.now() - t0} ms` });
   const refused = await client.callTool({ name: 'estimate_federal_tax', arguments: { ...P01, other_situations: ['tips'] } });
   log(`${S} out-of-scope profile refused with a reason`, refused.structuredContent.status === 'unsupported_scenario' && refused.structuredContent.reasons.some((r) => r.code === 'situation_tips'));
+  const absurd = await client.callTool({ name: 'estimate_federal_tax', arguments: { ...P01, w2_wages: 100000, federal_income_tax_withheld: 100001 } });
+  log(`${S} withholding above wages refused (withholding_above_wages), schema caps withholding at $200,000`, absurd.structuredContent?.status === 'unsupported_scenario' && absurd.structuredContent.reasons.some((r) => r.code === 'withholding_above_wages') && est.inputSchema.properties.federal_income_tax_withheld.maximum === 200000);
 
   // 2. Save without a token
   const email = `e2e-${surface}-${Date.now()}@example.com`;
@@ -124,6 +142,9 @@ async function run(surface) {
     try { await client.callTool({ name: 'save_estimate', arguments: { estimate_id: sc.estimate_id } }); } catch (err) { threw = err; }
     const challenge = httpTrace.filter((h) => h.status === 401).at(-1);
     log('CLAUDE Save without token: HTTP 401 with WWW-Authenticate before the MCP layer', threw instanceof UnauthorizedError && /resource_metadata="[^"]+\/\.well-known\/oauth-protected-resource\/mcp\/claude"/.test(challenge?.www_authenticate || ''), { note: challenge?.www_authenticate });
+    log('CLAUDE no token sent: the challenge carries resource_metadata and scope, no error code (RFC 6750 section 3.1)', noErrorCode(challenge?.www_authenticate), { note: challenge?.www_authenticate });
+    const junk = await fetch(`${BASE}/mcp/claude`, { method: 'POST', headers: { ...H, Authorization: 'Bearer not-a-real-token' }, body: rpc('tools/list') });
+    log('CLAUDE token sent and rejected: 401 with error="invalid_token"', junk.status === 401 && /error="invalid_token"/.test(junk.headers.get('www-authenticate') || ''));
     signup = await signUp(prov._s.lastAuthUrl, email);
     await transport.finishAuth(signup.params);
   } else {
@@ -147,6 +168,7 @@ async function run(surface) {
   const s1 = await client.callTool({ name: 'save_estimate', arguments: { estimate_id: sc.estimate_id } });
   const saved = s1.structuredContent;
   log(`${S} resumed Save stores the estimate shown`, saved.status === 'saved' && saved.already_saved === false && saved.estimate.amount === sc.amount && saved.estimate.outcome === sc.outcome, { note: `${saved.record_id} in ${saved.account?.label}, ${Date.now() - tSave} ms from the first Save` });
+  log(`${S} Save result alone is enough for a full card (assumptions, sources, engine, lines)`, saved.estimate.assumptions?.length === sc.assumptions.length && saved.estimate.sources?.length === sc.sources.length && saved.estimate.engine?.version === sc.engine.version && saved.estimate.lines?.total_tax_24 === sc.lines.total_tax_24);
   // 4. idempotency: double click, lost response
   const [s2, s3] = await Promise.all([1, 2].map(() => client.callTool({ name: 'save_estimate', arguments: { estimate_id: sc.estimate_id } })));
   log(`${S} Save repeated (twice in parallel) returns the same record`, [s2, s3].every((x) => x.structuredContent.record_id === saved.record_id && x.structuredContent.already_saved === true));
@@ -185,26 +207,104 @@ async function run(surface) {
   const other_surface = surface === 'claude' ? 'chatgpt' : 'claude';
   const wrong = await fetch(`${BASE}/mcp/${other_surface}`, { method: 'POST', headers: { Authorization: `Bearer ${prov._s.tokens.access_token}`, 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' }, body: JSON.stringify({ jsonrpc: '2.0', id: 9, method: 'tools/list', params: {} }) });
   log(`${S} token refused on the other endpoint (audience check)`, wrong.status === 401);
+
+  if (LOCAL_D1) {
+    // Meta event repair: the save exists but its event row was lost; a repeated Save restores it.
+    const acct = saved.account.id;
+    d1(`DELETE FROM server_events WHERE account_id = '${acct}' AND payload LIKE '%"Lead"%'`);
+    await client.callTool({ name: 'save_estimate', arguments: { estimate_id: sc.estimate_id } });
+    const back = d1(`SELECT count(*) AS n FROM server_events WHERE account_id = '${acct}' AND payload LIKE '%"Lead"%'`)[0].n;
+    log(`${S} lost Meta event row restored by the next Save (idempotent insert)`, back === 1);
+    // Expired demo account with a token that is still valid: a fresh sign-in is asked for.
+    d1(`UPDATE accounts SET expires_at = 0 WHERE id = '${acct}'`);
+    const fresh = await client.callTool({ name: 'estimate_federal_tax', arguments: P01 });
+    if (surface === 'claude') {
+      let threw = null;
+      const before = httpTrace.length;
+      try { await client.callTool({ name: 'save_estimate', arguments: { estimate_id: fresh.structuredContent.estimate_id } }); } catch (err) { threw = err; }
+      const ch = httpTrace.slice(before).find((h) => h.status === 401);
+      log('CLAUDE expired demo account: Save gets HTTP 401 invalid_token, the estimate still works', fresh.structuredContent.status === 'estimated' && !!threw && /error="invalid_token"/.test(ch?.www_authenticate || ''), { note: ch?.www_authenticate });
+    } else {
+      const r = await client.callTool({ name: 'save_estimate', arguments: { estimate_id: fresh.structuredContent.estimate_id } });
+      log('CHATGPT expired demo account: Save gets the tool error with mcp/www_authenticate', fresh.structuredContent.status === 'estimated' && r.isError === true && !!r._meta?.['mcp/www_authenticate']);
+    }
+    const rt = await fetch(`${BASE}/oauth/token`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: prov._s.tokens.refresh_token, client_id: prov._s.clientInfo.client_id, resource: `${BASE}/mcp/${surface}` }) });
+    log(`${S} expired demo account: its grant is revoked, the refresh token no longer works`, rt.status === 400, { note: `HTTP ${rt.status}` });
+  }
   return { surface, record: saved.record_id };
+}
+
+// Raw OAuth client for the web twin's API (resource /api/web), with PKCE.
+async function webClient(name, redirect = REDIRECT) {
+  const reg = await fetch(`${BASE}/oauth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_name: name, redirect_uris: [redirect], grant_types: ['authorization_code', 'refresh_token'], response_types: ['code'], token_endpoint_auth_method: 'none', application_type: 'native' }) });
+  const { client_id } = await reg.json();
+  const verifier = randomBytes(32).toString('base64url');
+  const u = new URL(`${BASE}/authorize`);
+  Object.entries({ response_type: 'code', client_id, redirect_uri: redirect, scope: 'estimates:write', state: 'st', code_challenge: createHash('sha256').update(verifier).digest('base64url'), code_challenge_method: 'S256', resource: `${BASE}/api/web` }).forEach(([k, v]) => u.searchParams.set(k, v));
+  return { client_id, verifier, url: u.toString() };
+}
+
+async function webAndConsent() {
+  const est = await (await fetch(`${BASE}/api/web/estimate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(P01) })).json();
+  const save = (token) => fetch(`${BASE}/api/web/save`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ estimate_id: est.estimate_id }) });
+  const anon = await save(null);
+  log('WEB Save without token: 401, challenge without an error code', anon.status === 401 && noErrorCode(anon.headers.get('www-authenticate')), { note: anon.headers.get('www-authenticate') });
+
+  // A valid token with an empty scope (downscoped at the code exchange) must not write.
+  const c = await webClient('E2E web scope probe');
+  const su = await signUp(c.url, `e2e-web-scope-${Date.now()}@example.com`);
+  const tok = await (await fetch(`${BASE}/oauth/token`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'authorization_code', code: su.params.get('code'), redirect_uri: REDIRECT, client_id: c.client_id, code_verifier: c.verifier, resource: `${BASE}/api/web`, scope: ' ' }) })).json();
+  const empty = await save(tok.access_token);
+  log('WEB token valid but without estimates:write: 403 insufficient_scope', tok.scope === '' && empty.status === 403 && /error="insufficient_scope"/.test(empty.headers.get('www-authenticate') || ''), { note: `token scope "${tok.scope}", HTTP ${empty.status}` });
+  const full = await (await fetch(`${BASE}/oauth/token`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: tok.refresh_token, client_id: c.client_id, resource: `${BASE}/api/web` }) })).json();
+  const ok = await (await save(full.access_token)).json();
+  log('WEB the refused call wrote nothing: the first Save with the full scope is a new record', ok.status === 'saved' && ok.already_saved === false, { note: ok.record_id });
+
+  // A client that registers itself as "ChatGPT" is not shown as ChatGPT.
+  const fake = await webClient('ChatGPT');
+  const page = await fetch(fake.url, { redirect: 'manual' });
+  const text = (await page.text()).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  log('A self-registered client named "ChatGPT" is shown as an unverified app, its name not repeated', page.status === 200 && text.includes('An unverified app (127.0.0.1)') && !text.includes('ChatGPT'));
+
+  // POST /authorize with a bad email, or "continue" without a live account: the form comes back.
+  const c2 = await webClient('E2E form retry');
+  const cookies = {};
+  const keep = (r) => { for (const x of r.headers.getSetCookie()) { const [kv] = x.split(';'); const i = kv.indexOf('='); cookies[kv.slice(0, i)] = kv.slice(i + 1); } };
+  const ck = () => Object.entries(cookies).map(([k, v]) => `${k}=${v}`).join('; ');
+  const g = await fetch(c2.url, { redirect: 'manual' }); keep(g);
+  const handle = /name="handle" value="([^"]+)"/.exec(await g.text())[1];
+  const post = (body) => fetch(c2.url, { method: 'POST', redirect: 'manual', headers: { Cookie: ck(), 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ handle, ...body }) });
+  const bad = await post({ action: 'create', email: 'not-an-email' });
+  const badHtml = await bad.text();
+  log('Sign-up with an invalid email: the form comes back with the error and the same handle', bad.status === 400 && badHtml.includes(`name="handle" value="${handle}"`) && /Enter an email address/.test(badHtml) && /name="email"/.test(badHtml));
+  const gone = await post({ action: 'continue' });
+  const goneHtml = await gone.text();
+  log('"Continue" without a live demo account: the form comes back, not a dead end', gone.status === 400 && goneHtml.includes(`name="handle" value="${handle}"`) && /no longer exists/.test(goneHtml));
+  const good = await post({ action: 'create', email: `e2e-retry-${Date.now()}@example.com` });
+  log('Same form, valid email: the sign-up completes with the same handle', good.status === 302 && new URL(good.headers.get('location')).searchParams.has('code'));
 }
 
 const started = new Date().toISOString();
 for (const s of ['claude', 'chatgpt']) {
   try { await run(s); } catch (err) { log(`${s.toUpperCase()} run aborted`, false, { note: String(err?.stack || err).slice(0, 400) }); }
 }
+try { await webAndConsent(); } catch (err) { log('WEB and consent checks aborted', false, { note: String(err?.stack || err).slice(0, 400) }); }
 // The hosts' own Client ID Metadata Documents resolve from the server (no code is redeemed).
 if (!BASE.includes('127.0.0.1')) {
   const { createHash } = await import('node:crypto');
   const challenge = createHash('sha256').update('cimd-probe-verifier-0123456789abcdefghijklmnop').digest('base64url');
   for (const [name, cid, redirect, surface, expect] of [
-    ['ChatGPT', 'https://chatgpt.com/oauth/client.json', 'https://chatgpt.com/connector_platform_oauth_redirect', 'chatgpt', 'ChatGPT (chatgpt.com)'],
-    ['Claude Code', 'https://claude.ai/oauth/claude-code-client-metadata', 'http://localhost:4567/callback', 'claude', 'Claude (claude.ai)'],
+    ['ChatGPT', 'https://chatgpt.com/oauth/client.json', 'https://chatgpt.com/connector_platform_oauth_redirect', 'chatgpt', 'App asking ChatGPT (chatgpt.com)'],
+    ['Claude', 'https://claude.ai/oauth/mcp-oauth-client-metadata', 'https://claude.ai/api/mcp/auth_callback', 'claude', 'App asking Claude (claude.ai)'],
+    ['Claude Code', 'https://claude.ai/oauth/claude-code-client-metadata', 'http://localhost:4567/callback', 'claude', 'App asking Claude Code (claude.ai)'],
   ]) {
     const u = new URL(`${BASE}/authorize`);
     Object.entries({ response_type: 'code', client_id: cid, redirect_uri: redirect, scope: 'estimates:write', state: 'probe', code_challenge: challenge, code_challenge_method: 'S256', resource: `${BASE}/mcp/${surface}` }).forEach(([k, v]) => u.searchParams.set(k, v));
     const r = await fetch(u, { redirect: 'manual' });
     const text = (await r.text()).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
     log(`${name}'s published CIMD document (${cid}) is fetched and accepted; the sign-up page names it`, r.status === 200 && text.includes(expect), { note: `HTTP ${r.status}` });
+    if (name === 'ChatGPT') log('ChatGPT sign-up page says to reopen the conversation and press Save again', text.includes('After connecting, reopen your conversation and press Save again.') && !text.includes('returns to your conversation'));
+    if (name === 'Claude') log('Claude sign-up page says Claude returns to the conversation and finishes the save', text.includes('After you continue, Claude returns to your conversation and finishes the save.'));
   }
 }
 

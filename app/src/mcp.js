@@ -3,7 +3,7 @@
 // metadata keys differ.
 import { McpServer, createMcpHandler, fromJsonSchema } from '@modelcontextprotocol/server';
 import { runEstimate, saveEstimate, estimateText, saveText } from './core.js';
-import { OTHER_SITUATIONS } from './params.js';
+import { OTHER_SITUATIONS, LIMITS } from './params.js';
 import { FILING_STATUSES } from './engine.js';
 import { logEvent } from './telemetry.js';
 import CARD_HTML from './card.generated.js';
@@ -22,7 +22,7 @@ export const ESTIMATE_INPUT = {
     filing_status: { type: 'string', enum: FILING_STATUSES, description: 'Filing status as the user states it. Do not infer head of household from having a child.' },
     head_of_household_confirmed: { type: 'boolean', description: 'Only for head_of_household: true when the user confirms being unmarried (or considered unmarried), paying more than half the cost of keeping up a home, with a qualifying person living there.' },
     w2_wages: { ...money, description: 'Expected W-2 wages (box 1) for the FULL year, both spouses if filing jointly, in whole dollars. Not a year-to-date figure.' },
-    federal_income_tax_withheld: { ...money, description: 'Expected federal income tax withheld (W-2 box 2) for the FULL year. Not Social Security or Medicare.' },
+    federal_income_tax_withheld: { ...money, maximum: LIMITS.max_wages, description: 'Expected federal income tax withheld (W-2 box 2) for the FULL year. Not Social Security or Medicare. Never more than the wages.' },
     qualifying_children_under_17: { type: 'integer', minimum: 0, maximum: 10, description: 'Children who will be under 17 at the end of the year and are claimed as dependents. 0 if none.' },
     children_meet_ctc_rules: { type: 'boolean', description: 'Required when there are children: true when the user confirms each child lived with them more than half the year, is their dependent and has an SSN valid for employment, and that the user (or one spouse on a joint return) has a valid SSN. Never ask for the numbers themselves.' },
     other_dependents: { type: 'integer', minimum: 0, maximum: 10, description: 'Other dependents (for example a child 17 or older, a parent). 0 if none.' },
@@ -86,9 +86,21 @@ export const SAVE_OUTPUT = {
     already_saved: { type: 'boolean', description: 'True when this estimate was already in this account; the same record is returned.' },
     saved_from: { type: 'string' },
     account: { type: 'object', properties: { id: { type: 'string' }, label: { type: 'string' }, email_hint: { type: 'string' } } },
-    estimate: { type: 'object', properties: { tax_year: { type: 'integer' }, outcome: { type: 'string' }, amount: { type: 'integer' }, filing_status: { type: 'string' }, lines, parameters_status: { type: 'string' } } },
+    estimate: {
+      type: 'object',
+      description: 'The saved estimate, complete enough to show the same card: amounts, assumptions, sources and engine version.',
+      properties: {
+        tax_year: { type: 'integer' }, outcome: { type: 'string' }, amount: { type: 'integer' }, filing_status: { type: 'string' }, lines,
+        parameters_status: { type: 'string' }, parameters_note: { type: 'string' },
+        engine: { type: 'object', properties: { name: { type: 'string' }, version: { type: 'string' } } },
+        assumptions: { type: 'array', items: { type: 'string' } },
+        sources: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, title: { type: 'string' }, url: { type: 'string' } } } },
+      },
+    },
   },
 };
+
+export const SAVE_DESCRIPTION = 'Save an estimate made by estimate_federal_tax into the signed-in demo account. Needs sign-in: without a demo account the call returns a sign-in request. Once connected, calling it again with the same estimate_id saves that estimate; saving the same estimate twice returns the same record.';
 
 const INSTRUCTIONS = `Federal tax refund estimator (demo, stand-in engine, sample data). Use estimate_federal_tax when someone asks what refund or balance to expect. Ask for every required answer; never assume one (for example, ask before answering "none" for other situations). Wages and withholding are full-year expected amounts. Never ask for a Social Security number. If the result is unsupported_scenario, explain the reasons and do not estimate yourself. When the user wants to keep an estimate, call save_estimate with its estimate_id; it may ask the user to create a demo account first.`;
 
@@ -138,7 +150,7 @@ function buildServer({ env, surface, origin, authInfo, uiDomain }) {
 
   server.registerTool('save_estimate', {
     title: 'Save estimate to account',
-    description: 'Save an estimate made by estimate_federal_tax into the signed-in demo account. Needs sign-in: if the user has no demo account yet, the host shows a sign-up step and then retries this same call. Saving the same estimate twice returns the same record.',
+    description: SAVE_DESCRIPTION,
     inputSchema: fromJsonSchema(SAVE_INPUT),
     outputSchema: fromJsonSchema(SAVE_OUTPUT),
     annotations: { title: 'Save estimate to account', readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -184,7 +196,12 @@ function buildServer({ env, surface, origin, authInfo, uiDomain }) {
           csp: { connectDomains: [], resourceDomains: ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'] },
           ...(uiDomain ? { domain: uiDomain } : {}),
         },
-        ...(isChatGPT ? { 'openai/widgetDescription': 'Shows the federal tax estimate, its assumptions and a Save button. The model does not need to repeat the numbers.' } : {}),
+        ...(isChatGPT ? {
+          'openai/widgetDescription': 'Shows the federal tax estimate, its assumptions and a Save button. The model does not need to repeat the numbers.',
+          // ChatGPT's compatibility keys for the same policy and origin as ui.csp and ui.domain.
+          'openai/widgetCSP': { connect_domains: [], resource_domains: ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'] },
+          'openai/widgetDomain': uiDomain,
+        } : {}),
       },
     }],
   }));
@@ -195,7 +212,8 @@ function buildServer({ env, surface, origin, authInfo, uiDomain }) {
 export function makeHandlers(origin) {
   const handlers = {};
   for (const surface of ['claude', 'chatgpt']) {
-    let uiDomainPromise = surface === 'claude' ? claudeUiDomain(`${origin}/mcp/claude`) : Promise.resolve(null);
+    // Claude: its sandbox host derived from the server URL. ChatGPT: a dedicated origin of our own.
+    let uiDomainPromise = surface === 'claude' ? claudeUiDomain(`${origin}/mcp/claude`) : Promise.resolve(origin);
     handlers[surface] = (env) => createMcpHandler(async (ctx) => buildServer({ env, surface, origin, authInfo: ctx.authInfo, uiDomain: await uiDomainPromise }), {
       legacy: 'stateless',
       onerror: () => logEvent('error', { surface, code: 'mcp_sdk' }),
