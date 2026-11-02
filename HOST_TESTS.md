@@ -63,8 +63,8 @@ After sign-up, ChatGPT came back to its home page in all three Nov 2 runs: reope
 
 - Screen recordings (desktop, browser named exactly, e.g. "Chrome 1xx on macOS, chatgpt.com web"); no phone
   claims unless a phone was really used. Save them as:
-  - `page/site/recordings/chatgpt.mp4` (+ `chatgpt.jpg` poster)
-  - `page/site/recordings/claude.mp4` (+ `claude.jpg` poster)
+  - `page/site/recordings/chatgpt-run3.mp4` (+ `chatgpt-saved.jpg` poster)
+  - `page/site/recordings/claude-run3.mp4` (+ `claude.jpg` poster)
 - Fill `page/site/data/host-runs.json`, one block per host:
 
 ```json
@@ -72,7 +72,7 @@ After sign-up, ChatGPT came back to its home page in all three Nov 2 runs: reope
   "status": "recorded",
   "surface": "claude.ai in Chrome on macOS (desktop)",
   "date": "Nov 3, 2026",
-  "video": "recordings/claude.mp4",
+  "video": "recordings/claude-run3.mp4",
   "poster": "recordings/claude.jpg",
   "runs": [
     { "label": "Run 1, new demo account", "seconds": 0 },
