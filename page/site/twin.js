@@ -1,7 +1,7 @@
 // Web twin: the same card, the same server calculation and the same Save through the same OAuth
 // authorization server as the ChatGPT and Claude app. This page is an OAuth public client
 // identified by a Client ID Metadata Document (oauth-client.json), with PKCE S256.
-import { createCard } from './card-core.js';
+import { createCard } from './card-core.js?v=f5d87c4';
 
 const API = 'https://tax-mcp-demo.theaipipe.com';
 const ISSUER = API;
