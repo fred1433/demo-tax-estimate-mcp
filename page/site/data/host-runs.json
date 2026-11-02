@@ -1,5 +1,56 @@
 {
   "note": "Filled in by the host tests (HOST_TESTS.md). Only runs that actually happened go here.",
-  "chatgpt": { "status": "pending", "surface": null, "date": null, "video": null, "poster": null, "runs": [] },
-  "claude": { "status": "pending", "surface": null, "date": null, "video": null, "poster": null, "runs": [] }
+  "chatgpt": {
+    "status": "pending",
+    "surface": "chatgpt.com in Chrome 156 on macOS (desktop)",
+    "date": "Nov 2, 2026",
+    "video": "recordings/chatgpt.mp4",
+    "poster": "recordings/chatgpt.jpg",
+    "video_note": "Run 3, real time (1x), tab only, cropped to the chat column; the opening home screen (account greeting), the @-mention picker frames and the still frames after the save are cut.",
+    "why_pending": "After sign-up, ChatGPT came back to its home page (chatgpt.com/), not to the conversation, and did not retry the Save. In all three runs the conversation had to be reopened and Save pressed again.",
+    "path": "Account-linking dialog shown by ChatGPT from the card's own Save (about 0.8 s after the click); OAuth ran in the same tab, not a popup. Registration: CIMD https://chatgpt.com/oauth/client.json, callback https://chatgpt.com/connector_platform_oauth_redirect.",
+    "runs": [
+      {
+        "label": "Run 1, new demo account, operator pausing to inspect each screen, conversation reopened from the sidebar",
+        "seconds": 116
+      },
+      {
+        "label": "Run 2, new demo account, clicks scripted (no reading or typing time), conversation reopened by URL",
+        "seconds": 13.2
+      },
+      {
+        "label": "Run 3, new demo account, clicks scripted (no reading or typing time), conversation reopened by URL",
+        "seconds": 14.3
+      }
+    ],
+    "repeat_save": "Asked the model to save again: Already saved, same record (sav_zc7xmb3f24ss, account FAZF)."
+  },
+  "claude": {
+    "status": "recorded",
+    "surface": "claude.ai in Chrome 156 on macOS (desktop)",
+    "date": "Nov 2, 2026",
+    "video": "recordings/claude.mp4",
+    "poster": "recordings/claude.jpg",
+    "video_note": "Run 3, real time (1x), tab and sign-up popup only, cropped to the chat column; the opening home screen (account greeting) and Claude's first answer (its own arithmetic, before it was asked to use the tool) are cut.",
+    "path": "A: Claude showed its inline Connect banner from the card's own Save (HTTP 401), about 0.6 to 0.9 s after the click; sign-up in a popup; the card's Save resumed by itself in the same conversation.",
+    "runs": [
+      {
+        "label": "Run 1, new demo account, operator pausing to inspect each screen",
+        "seconds": 54
+      },
+      {
+        "label": "Run 2, new demo account, clicks scripted (no reading or typing time)",
+        "seconds": 11.0
+      },
+      {
+        "label": "Run 3, new demo account, clicks scripted (no reading or typing time)",
+        "seconds": 9.5
+      },
+      {
+        "label": "Save with a demo account already connected",
+        "seconds": 0.9
+      }
+    ],
+    "repeat_save": "Asked Claude to save again: already saved, same record (sav_9hw78sdhxxcs, account U3AA)."
+  }
 }

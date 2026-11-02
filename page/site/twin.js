@@ -168,8 +168,12 @@ async function hosts() {
       const times = (h.runs || []).map((r) => `<li>${r.label}: ${r.seconds} s from Save to saved</li>`).join('');
       box.innerHTML = `<video controls preload="metadata" playsinline ${h.poster ? `poster="${h.poster}"` : ''} src="${h.video}"></video>
         <div class="rec-meta">Recorded ${h.date} in ${name} on ${h.surface}.${times ? `<ul>${times}</ul>` : ''}</div>`;
+    } else if (h && h.status === 'pending' && h.video) {
+      const times = (h.runs || []).map((r) => `<li>${r.label}: ${r.seconds} s from Save to saved</li>`).join('');
+      box.innerHTML = `<video controls preload="metadata" playsinline ${h.poster ? `poster="${h.poster}"` : ''} src="${h.video}"></video>
+        <div class="rec-meta">Recorded ${h.date} in ${name} on ${h.surface}. Not yet seamless: ${h.why_pending.charAt(0).toLowerCase() + h.why_pending.slice(1)}${times ? `<ul>${times}</ul>` : ''}</div>`;
     } else {
-      box.innerHTML = `<p>The ${name} recording goes here once the run in ${name} has been done and filmed.<br><span class="small">Until then, the scripted checks below are what has been verified.</span></p>`;
+      box.innerHTML = `<p>No ${name} recording yet.<br><span class="small">The scripted checks below are what has been verified.</span></p>`;
     }
   }
   const list = $('#verified-list');
@@ -181,6 +185,7 @@ async function hosts() {
   for (const host of ['chatgpt', 'claude']) {
     const h = runs?.[host];
     if (h?.status === 'recorded') items.push(`${h.date}, ${host === 'chatgpt' ? 'ChatGPT' : 'Claude'} on ${h.surface}: estimate, sign-up and return to the same conversation, filmed.`);
+    else if (h?.status === 'pending' && h.video) items.push(`${h.date}, ${host === 'chatgpt' ? 'ChatGPT' : 'Claude'} on ${h.surface}: estimate, account linking and the saved record, filmed; the conversation had to be reopened after sign-up.`);
   }
   if (!runs || ['chatgpt', 'claude'].every((h) => runs[h]?.status !== 'recorded')) items.push('Not yet checked: the same journey inside chatgpt.com and claude.ai. The recordings above appear once it is.');
   list.innerHTML = items.map((x) => `<li>${x}</li>`).join('');

@@ -3,7 +3,7 @@
 A remote MCP server with two tools, built for FileTax.com as an independent demo (not affiliated with FileTax.com, sample tax data only):
 
 - `estimate_federal_tax`: no sign-in. Formal JSON Schemas, `readOnlyHint: true`, a result card (MCP Apps) and a plain-text fallback.
-- `save_estimate`: OAuth 2.1. An account is created on the sign-up page during authorization, the host resumes the same call, and the estimate shown is stored once per account (a repeated Save returns the same record).
+- `save_estimate`: OAuth 2.1. An account is created on the sign-up page during authorization and the estimate shown is stored once per account (a repeated Save returns the same record). Tested on Nov 2, 2026: Claude resumed the same Save by itself in the same conversation; ChatGPT linked the account but came back to its home page, so the conversation had to be reopened and Save pressed again (HOST_TESTS.md).
 
 Live: page https://theaipipe.com/demos/tax-estimate-mcp/ and server https://tax-mcp-demo.theaipipe.com (`/mcp/claude`, `/mcp/chatgpt`).
 

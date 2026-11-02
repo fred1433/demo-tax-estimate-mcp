@@ -23,6 +23,8 @@ tool requires those answers on purpose.
    `https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=Tax%20estimate%20demo&connectorUrl=https%3A%2F%2Ftax-mcp-demo.theaipipe.com%2Fmcp%2Fclaude`
    and confirm. Claude should connect without asking to sign in (tools are listed anonymously).
    If Claude asks to sign in at this step, note it: it means Claude treats the server as auth-required.
+   Observed on Nov 2, 2026: the add dialog offers **Sign in when needed**; choose it, so the tools stay usable
+   anonymously and sign-in only starts at Save.
 2. New chat, enable the connector, paste the sample prompt.
    Check: `estimate_federal_tax` runs without sign-in; the card renders (Claude may ask to allow the app UI).
 3. Start the stopwatch, then press **Save estimate** on the card.

@@ -1,5 +1,5 @@
-// Gabarit : remplacer tax-estimate-mcp. Sert site/ sous https://theaipipe.com/demos/tax-estimate-mcp/ (static files only).
-// The route is more specific than the galerie-presell route theaipipe.com/demos/*, so it wins.
+// Serves site/ under https://theaipipe.com/demos/tax-estimate-mcp/ (static files only).
+// This route is more specific than the generic theaipipe.com/demos/* route, so it wins.
 const BASE = '/demos/tax-estimate-mcp';
 export default {
   async fetch(request, env) {
