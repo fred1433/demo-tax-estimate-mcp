@@ -25,21 +25,25 @@ code{font-size:.82em}
 <p>Generated from the test outputs on Nov 2, 2026. Source code: <a href="https://github.com/fred1433/demo-tax-estimate-mcp">github.com/fred1433/demo-tax-estimate-mcp</a>.</p>
 
 <h2>The journey, checked</h2>
-<p><strong>Scripted MCP client</strong> (@modelcontextprotocol/client 2.4.0) against the live server, Nov 2, 2026: 42 of 42 checks passed. The same script against a local run: 62 of 62, including the expired-reference case that needs the signing secret.</p>
+<p><strong>Scripted MCP client</strong> (@modelcontextprotocol/client 2.4.0) against the live server, Nov 2, 2026: 59 of 59 checks passed. The same script against a local run: 62 of 62, including the expired-reference case that needs the signing secret.</p>
 <ul class="checks"><li class="ok">Pass: CLAUDE 2025-era initialize handshake answered <span class="m">[protocolVersion 2025-11-25]</span></li>
 <li class="ok">Pass: CLAUDE tools/list without sign-in returns both tools</li>
 <li class="ok">Pass: CLAUDE annotations exact</li>
 <li class="ok">Pass: CLAUDE formal input and output schemas</li>
 <li class="ok">Pass: CLAUDE card linked by _meta.ui.resourceUri</li>
 <li class="ok">Pass: CLAUDE card resource is text/html;profile=mcp-app <span class="m">[ui.domain 6049d9b0c73c3693527e0a4a7053514d.claudemcpcontent.com]</span></li>
-<li class="ok">Pass: CLAUDE anonymous estimate (no token) <span class="m">[refund 1219, 34 ms]</span></li>
+<li class="ok">Pass: CLAUDE anonymous estimate (no token) <span class="m">[refund 1219, 45 ms]</span></li>
 <li class="ok">Pass: CLAUDE out-of-scope profile refused with a reason</li>
-<li class="ok">Pass: CLAUDE Save without token: HTTP 401 with WWW-Authenticate before the MCP layer <span class="m">[Bearer error=&#34;invalid_token&#34;, error_description=&#34;Sign in to save this estimate&#34;, resource_metadata=&#34;https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/mcp/claude&#34;, scope=&#34;estimates:write&#34;]</span></li>
+<li class="ok">Pass: CLAUDE withholding above wages refused (withholding_above_wages), schema caps withholding at $200,000</li>
+<li class="ok">Pass: CLAUDE Save without token: HTTP 401 with WWW-Authenticate before the MCP layer <span class="m">[Bearer resource_metadata=&#34;https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/mcp/claude&#34;, scope=&#34;estimates:write&#34;]</span></li>
+<li class="ok">Pass: CLAUDE no token sent: the challenge carries resource_metadata and scope, no error code (RFC 6750 section 3.1) <span class="m">[Bearer resource_metadata=&#34;https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/mcp/claude&#34;, scope=&#34;estimates:write&#34;]</span></li>
+<li class="ok">Pass: CLAUDE token sent and rejected: 401 with error=&#34;invalid_token&#34;</li>
 <li class="ok">Pass: CLAUDE authorization request: PKCE S256 and resource indicator</li>
 <li class="ok">Pass: CLAUDE sign-up page names the requesting app and the redirect host, no SSN field</li>
 <li class="ok">Pass: CLAUDE RFC 9207 iss returned and equal to the issuer</li>
-<li class="ok">Pass: CLAUDE account created during authorization, tokens issued <span class="m">[sign-up round trip 2528 ms]</span></li>
-<li class="ok">Pass: CLAUDE resumed Save stores the estimate shown <span class="m">[sav_my9wcysac2tb in Demo account YBKM, 5168 ms from the first Save]</span></li>
+<li class="ok">Pass: CLAUDE account created during authorization, tokens issued <span class="m">[sign-up round trip 2557 ms]</span></li>
+<li class="ok">Pass: CLAUDE resumed Save stores the estimate shown <span class="m">[sav_6fcub4z7tjud in Demo account JZ6K, 5982 ms from the first Save]</span></li>
+<li class="ok">Pass: CLAUDE Save result alone is enough for a full card (assumptions, sources, engine, lines)</li>
 <li class="ok">Pass: CLAUDE Save repeated (twice in parallel) returns the same record</li>
 <li class="ok">Pass: CLAUDE an account_id argument is rejected by the schema</li>
 <li class="ok">Pass: CLAUDE tampered reference: explicit error, nothing saved</li>
@@ -51,22 +55,35 @@ code{font-size:.82em}
 <li class="ok">Pass: CHATGPT formal input and output schemas</li>
 <li class="ok">Pass: CHATGPT card linked by _meta.ui.resourceUri</li>
 <li class="ok">Pass: CHATGPT securitySchemes: estimate noauth, save oauth2</li>
-<li class="ok">Pass: CHATGPT card resource is text/html;profile=mcp-app <span class="m">[no ui.domain (ChatGPT default sandbox)]</span></li>
-<li class="ok">Pass: CHATGPT anonymous estimate (no token) <span class="m">[refund 1219, 22 ms]</span></li>
+<li class="ok">Pass: CHATGPT card resource is text/html;profile=mcp-app <span class="m">[ui.domain https://tax-mcp-demo.theaipipe.com]</span></li>
+<li class="ok">Pass: CHATGPT card declares its CSP and domain for ChatGPT (ui.csp, ui.domain, openai/widgetCSP, openai/widgetDomain) <span class="m">[widgetDomain https://tax-mcp-demo.theaipipe.com]</span></li>
+<li class="ok">Pass: CHATGPT anonymous estimate (no token) <span class="m">[refund 1219, 28 ms]</span></li>
 <li class="ok">Pass: CHATGPT out-of-scope profile refused with a reason</li>
+<li class="ok">Pass: CHATGPT withholding above wages refused (withholding_above_wages), schema caps withholding at $200,000</li>
 <li class="ok">Pass: CHATGPT Save without token: tool error carrying _meta[&#34;mcp/www_authenticate&#34;] with error and error_description <span class="m">[Bearer resource_metadata=&#34;https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/mcp/chatgpt&#34;, error=&#34;insufficient_scope&#34;, error_description=&#34;Create or connect a demo account to save this estimate&#34;, […]]</span></li>
 <li class="ok">Pass: CHATGPT OAuth started from the challenge</li>
 <li class="ok">Pass: CHATGPT authorization request: PKCE S256 and resource indicator</li>
 <li class="ok">Pass: CHATGPT sign-up page names the requesting app and the redirect host, no SSN field</li>
 <li class="ok">Pass: CHATGPT RFC 9207 iss returned and equal to the issuer</li>
-<li class="ok">Pass: CHATGPT account created during authorization, tokens issued <span class="m">[sign-up round trip 2456 ms]</span></li>
-<li class="ok">Pass: CHATGPT resumed Save stores the estimate shown <span class="m">[sav_fd4jttzra58d in Demo account JJZ9, 5018 ms from the first Save]</span></li>
+<li class="ok">Pass: CHATGPT account created during authorization, tokens issued <span class="m">[sign-up round trip 2932 ms]</span></li>
+<li class="ok">Pass: CHATGPT resumed Save stores the estimate shown <span class="m">[sav_dmvjmw382yyb in Demo account F8C7, 6151 ms from the first Save]</span></li>
+<li class="ok">Pass: CHATGPT Save result alone is enough for a full card (assumptions, sources, engine, lines)</li>
 <li class="ok">Pass: CHATGPT Save repeated (twice in parallel) returns the same record</li>
 <li class="ok">Pass: CHATGPT an account_id argument is rejected by the schema</li>
 <li class="ok">Pass: CHATGPT tampered reference: explicit error, nothing saved</li>
 <li class="ok">Pass: CHATGPT owner comes from the token: a second account gets a separate record</li>
 <li class="ok">Pass: CHATGPT token refused on the other endpoint (audience check)</li>
+<li class="ok">Pass: WEB Save without token: 401, challenge without an error code <span class="m">[Bearer resource_metadata=&#34;https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/api/web&#34;, scope=&#34;estimates:write&#34;]</span></li>
+<li class="ok">Pass: WEB token valid but without estimates:write: 403 insufficient_scope <span class="m">[token scope &#34;&#34;, HTTP 403]</span></li>
+<li class="ok">Pass: WEB the refused call wrote nothing: the first Save with the full scope is a new record <span class="m">[sav_4qgqb5eyrsau]</span></li>
+<li class="ok">Pass: A self-registered client named &#34;ChatGPT&#34; is shown as an unverified app, its name not repeated</li>
+<li class="ok">Pass: Sign-up with an invalid email: the form comes back with the error and the same handle</li>
+<li class="ok">Pass: &#34;Continue&#34; without a live demo account: the form comes back, not a dead end</li>
+<li class="ok">Pass: Same form, valid email: the sign-up completes with the same handle</li>
 <li class="ok">Pass: ChatGPT&#39;s published CIMD document (https://chatgpt.com/oauth/client.json) is fetched and accepted; the sign-up page names it <span class="m">[HTTP 200]</span></li>
+<li class="ok">Pass: ChatGPT sign-up page says to reopen the conversation and press Save again</li>
+<li class="ok">Pass: Claude&#39;s published CIMD document (https://claude.ai/oauth/mcp-oauth-client-metadata) is fetched and accepted; the sign-up page names it <span class="m">[HTTP 200]</span></li>
+<li class="ok">Pass: Claude sign-up page says Claude returns to the conversation and finishes the save</li>
 <li class="ok">Pass: Claude Code&#39;s published CIMD document (https://claude.ai/oauth/claude-code-client-metadata) is fetched and accepted; the sign-up page names it <span class="m">[HTTP 200]</span></li></ul>
 <p><strong>Web twin in a real browser</strong> (Chromium (Playwright), desktop 1440 and 390 px), Nov 2, 2026: 18 of 18 checks passed.</p>
 <ul class="checks"><li class="ok">Pass: Maya: estimate shown without an account, equal to the IRS-derived reference <span class="m">[$1,219]</span></li>
@@ -74,21 +91,56 @@ code{font-size:.82em}
 <li class="ok">Pass: View assumptions opens and shows the draft status of the 2026 tables</li>
 <li class="ok">Pass: sign-up page names the requesting app from its verified CIMD domain <span class="m">[The AI Pipe demo service Create a demo account to save your estimate The web estimator is asking to save tax estimates to an account on this demo service. After]</span></li>
 <li class="ok">Pass: sign-up page has no SSN field and no FileTax logo</li>
-<li class="ok">Pass: back on the page, the same estimate saved <span class="m">[5.1 s from click to saved (scripted, no typing delay)]</span></li>
+<li class="ok">Pass: back on the page, the same estimate saved <span class="m">[5.6 s from click to saved (scripted, no typing delay)]</span></li>
 <li class="ok">Pass: the authorization code left the address bar</li>
 <li class="ok">Pass: journey shows the four steps done</li>
-<li class="ok">Pass: Save again returns the same record <span class="m">[sav_pqfszcymnsar]</span></li>
+<li class="ok">Pass: Save again returns the same record <span class="m">[sav_b3bytz5u4be8]</span></li>
 <li class="ok">Pass: Meta server event preview shown, not sent, without amounts or email <span class="m">[events: CompleteRegistration, Lead]</span></li>
 <li class="ok">Pass: returning visitor is offered the existing demo account</li>
-<li class="ok">Pass: second estimate saved into the same account <span class="m">[Saved to Demo account BM5G]</span></li>
+<li class="ok">Pass: second estimate saved into the same account <span class="m">[Saved to Demo account PVK4]</span></li>
 <li class="ok">Pass: cancelled sign-up: nothing saved, said so</li>
 <li class="ok">Pass: edited profile in the EIC range is refused with the reason</li>
 <li class="ok">Pass: Claude tab shows its panel and the prefilled Add to Claude link</li>
 <li class="ok">Pass: ChatGPT tab shows its panel</li>
 <li class="ok">Pass: no JavaScript errors</li>
 <li class="ok">Pass: 390 px: no horizontal scroll <span class="m">[scrollWidth 390]</span></li></ul>
-<p><strong>Page regression checks</strong> (Chromium, network faults injected: a late answer, a lost Save response, failed calls), not run.</p>
-<ul class="checks"><li>Not run.</li></ul>
+<p><strong>Page regression checks</strong> (Chromium, network faults injected: a late answer, a lost Save response, failed calls), Nov 2, 2026: 28 of 28 checks passed.</p>
+<ul class="checks"><li class="ok">Pass: 6: the Claude tab comes first and is selected on arrival <span class="m">[tabs [&#39;Claude&#39;, &#39;ChatGPT&#39;], Claude selected=true]</span></li>
+<li class="ok">Pass: 6: two status lines under the title, one per host <span class="m">[Claude: returns to the conversation and saves automatically.
+ChatGPT: account linking works; reopen the conversation and press Save again.]</span></li>
+<li class="ok">Pass: 6: order is title, hosts, then the playable twin <span class="m">[[&#39;wrap hero&#39;, &#39;hosts&#39;, &#39;try&#39;]]</span></li>
+<li class="ok">Pass: 6: a call link next to the demonstration, besides the footer one <span class="m">[1 in main]</span></li>
+<li class="ok">Pass: 8: the Claude video note is shown under the video</li>
+<li class="ok">Pass: 11 quater: &#34;Recorded &#60;date&#62; on &#60;surface&#62;.&#34; <span class="m">[Recorded Nov 2, 2026 on claude.ai in Chrome 156 on macOS (desktop).
+
+Edit: Run 3, real time (1x), tab and sign-up popup ]</span></li>
+<li class="ok">Pass: 8: the ChatGPT video note and repeat-save result are shown</li>
+<li class="ok">Pass: 8: timings and checks sit in a closed &#34;Test details&#34; panel, every run listed with its label <span class="m">[open=False]</span></li>
+<li class="ok">Pass: 9: the sample prompt gives the answers the tool requires <span class="m">[I&#39;m single, no kids. I expect $58,400 in W-2 wages this year and about $6,050 of federal tax withheld. I&#39;m under 65, not]</span></li>
+<li class="ok">Pass: 3: while a new estimate is computing, the card says so and Save is unavailable <span class="m">[aria-busy=true, save enabled=False]</span></li>
+<li class="ok">Pass: 3: answers out of order (Jordan late, Ana first): the card ends on Ana <span class="m">[$2,369]</span></li>
+<li class="ok">Pass: 4: empty withholding is an error next to the field, never $0 withheld <span class="m">[error=&#34;Enter an amount (0 if none).&#34;]</span></li>
+<li class="ok">Pass: 0: &#34;1e6&#34; wages refused in the twin <span class="m">[error=&#34;Whole dollars only, digits only (for example 58400).&#34;]</span></li>
+<li class="ok">Pass: 0: negative wages refused in the twin <span class="m">[error=&#34;Whole dollars only, digits only (for example 58400).&#34;]</span></li>
+<li class="ok">Pass: 0: decimal wages refused in the twin <span class="m">[error=&#34;Whole dollars only, digits only (for example 58400).&#34;]</span></li>
+<li class="ok">Pass: 0: withholding above wages is refused by the server, with the reason</li>
+<li class="ok">Pass: 4: 0 or a valid value is still accepted after an error</li>
+<li class="ok">Pass: 5: a failed estimate is shown, with a retry <span class="m">[No estimate yet
+
+The estimate could not be fetched (network or server error).
+
+Try again]</span></li>
+<li class="ok">Pass: 5: a lost Save response says the confirmation was interrupted, not &#34;nothing was saved&#34;</li>
+<li class="ok">Pass: 10: back from sign-up, the edited inputs and prompt are kept <span class="m">[wages field 70000; prompt: I&#39;m single, no kids. (Edited: $70,000 wages, $6,050 withheld.)]</span></li>
+<li class="ok">Pass: 5: Try again reuses the same reference and finds the record already saved <span class="m">[Already saved to Demo account A69N]</span></li>
+<li class="ok">Pass: 10: with a connected account, step 1 does not say &#34;no account&#34; and step 3 says the account is reused <span class="m">[1=&#34;Estimate shown, no sign-in needed for it
+no sign-in&#34; 3=&#34;Using the connected demo account&#34;]</span></li>
+<li class="ok">Pass: no JavaScript errors (1440)</li>
+<li class="ok">Pass: 5: a failed token exchange is shown, with a retry button <span class="m">[The sign-in could not be completed, so this estimate is not saved yet. Try again to sign in.]</span></li>
+<li class="ok">Pass: 12: at 390 px the status lines and the Claude tab are within the first two screens <span class="m">[status bottom 430px, tab bottom 772px]</span></li>
+<li class="ok">Pass: 12: no horizontal scroll at 390 px <span class="m">[scrollWidth 390]</span></li>
+<li class="ok">Pass: 1: proofs page reports the host runs from host-runs.json, no stale &#34;not run&#34; line</li>
+<li class="ok">Pass: 18 ter: proofs notes are whole, or cut at a word with an explicit ellipsis <span class="m">[22 notes, 0 bad]</span></li></ul>
 <p><strong>Inside claude.ai and chatgpt.com</strong>, run by hand in a logged-in desktop browser (from <code>data/host-runs.json</code>):</p>
 <ul><li><strong>Claude</strong>, Nov 2, 2026, claude.ai in Chrome 156 on macOS (desktop): estimate, sign-up and the same Save finished in the same conversation, filmed. A: Claude showed its inline Connect banner from the card&#39;s own Save (HTTP 401), about 0.6 to 0.9 s after the click; sign-up in a popup; the card&#39;s Save resumed by itself in the same conversation. Timed from Save to saved: Run 1, new demo account, operator pausing to inspect each screen: 54 s; Run 2, new demo account, clicks scripted (no reading or typing time): 11 s; Run 3, new demo account, clicks scripted (no reading or typing time): 9.5 s; Save with a demo account already connected: 0.9 s. Asked Claude to save again: already saved, same record (sav_9hw78sdhxxcs, account U3AA).</li><li><strong>ChatGPT</strong>, Nov 2, 2026, chatgpt.com in Chrome 156 on macOS (desktop): estimate, account linking and the saved record, filmed. After sign-up, ChatGPT came back to its home page (chatgpt.com/), not to the conversation, and did not retry the Save. In all three runs the conversation had to be reopened and Save pressed again. Account-linking dialog shown by ChatGPT from the card&#39;s own Save (about 0.8 s after the click); OAuth ran in the same tab, not a popup. Registration: CIMD https://chatgpt.com/oauth/client.json, callback https://chatgpt.com/connector_platform_oauth_redirect. Timed from Save to saved: Run 1, new demo account, operator pausing to inspect each screen, conversation reopened from the sidebar: 116 s; Run 2, new demo account, clicks scripted (no reading or typing time), conversation reopened by URL: 13.2 s; Run 3, new demo account, clicks scripted (no reading or typing time), conversation reopened by URL: 14.3 s. Asked the model to save again: Already saved, same record (sav_zc7xmb3f24ss, account FAZF).</li></ul>
 
@@ -155,7 +207,7 @@ code{font-size:.82em}
 
 <h2>Logs and the Meta event</h2>
 <p>The Worker writes one kind of log line: a closed list of fields (event, surface, outcome, duration, a random correlation id, a code). Library output is replaced by a fixed marker. Invocation logs and traces are off. Workers Logs still attach the request URL to each line, so requests whose URL carries a query string (the OAuth authorization request) write no line at all. The page Worker, which receives the OAuth callback, has logging off.</p>
-<p><strong>Check on the live Worker</strong>, Nov 2, 2026: 16 steps (estimate, refusal, validation error, sign-in refused, sign-up, Save, repeated Save, tampered reference, invalid token, token refresh, on both MCP endpoints, then estimate, refusal, sign-up with its OAuth callback, Save, repeated Save and invalid token on the web twin's API) with recognisable values, then 20 values searched in 40 lines read back from Cloudflare Workers Logs (telemetry query API): <strong>0 found</strong>. Fields seen: cid, code, evt, ms, outcome, surface.</p>
+<p><strong>Check on the live Worker</strong>, Nov 2, 2026: 21 steps (estimate, refusal, validation error, sign-in refused, sign-up, Save, repeated Save, tampered reference, invalid token, token refresh, on both MCP endpoints, then estimate, refusal, sign-up with its OAuth callback, Save, repeated Save and invalid token on the web twin's API) with recognisable values, then 45 values searched in 68 lines read back from Cloudflare Workers Logs (telemetry query API): <strong>0 found</strong>. Fields seen: cid, code, evt, ms, outcome, surface.</p>
 <p>Same check on a local run (with the expired-reference case): 0 found in 43 lines.</p>
 <p>Meta Conversions API: preview only, never sent. After a confirmed sign-up (<code>CompleteRegistration</code>) and a confirmed first Save (<code>Lead</code>), the server stores the event it would send, deduplicated by <code>event_id</code>. It holds a hashed email, a hashed account id, the surface and the action source; no amount, no refund or balance category, no tax year, no IP address or user agent, since on ChatGPT and Claude the request comes from the host's servers, not from the taxpayer. No compliance claim is made.</p>
 

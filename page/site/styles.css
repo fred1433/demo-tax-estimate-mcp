@@ -53,7 +53,7 @@ code { font: .86em/1.4 "Public Sans", system-ui, sans-serif; font-weight: 600; b
 .lede { margin: 18px 0 0 var(--gutter); max-width: 64ch; font-size: 1.02rem; color: var(--muted); }
 
 /* where it stands, one form line per host */
-.status { list-style: none; margin: 22px 0 0 var(--gutter); padding: 0; max-width: 62ch; border-top: 2px solid var(--ink); }
+.status { list-style: none; margin: 22px 0 0 var(--gutter); padding: 0; max-width: 72ch; border-top: 2px solid var(--ink); }
 .status li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; align-items: start; padding: 11px 0; border-bottom: 1px solid var(--rule); font-size: 1.06rem; }
 .st-mark { width: 18px; height: 18px; margin-top: 4px; border-radius: 50%; border: 2px solid var(--green); position: relative; }
 .st-ok .st-mark { background: var(--green); }
@@ -108,7 +108,7 @@ section.twin, section.hosts, .foot { display: grid; grid-template-columns: var(-
 .tabs button { font: inherit; font-weight: 600; border: none; background: transparent; color: var(--muted); padding: 8px 18px; border-radius: 7px; cursor: pointer; }
 .tabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
 .panel[hidden] { display: none; }
-.panel { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 40px; margin-top: 22px; align-items: start; }
+.panel { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); gap: 36px; margin-top: 22px; align-items: start; }
 .rec { border: 1px dashed var(--rule); border-radius: 12px; background: var(--surface); min-height: 150px; display: grid; place-items: center; padding: 20px; text-align: center; color: var(--muted); }
 .rec.has-video { border: 1px solid var(--rule-soft); padding: 12px; place-items: stretch; }
 .rec video { width: 100%; border-radius: 8px; display: block; background: var(--paper); }

@@ -290,8 +290,10 @@ async def main():
             c, p = await new_page(browser, viewport={'width': 1440, 'height': 1000})
             await p.goto(URL + 'proofs.html')
             text = await p.locator('main').inner_text()
-            check('1: proofs page reports the host runs, never "not yet run"', 'not yet run' not in text and runs['claude']['surface'] in text and runs['chatgpt']['surface'] in text)
-            check('18 ter: no note cut mid-word in the proofs', re.search(r'[a-z]\)\s*$|scop\)', text, re.M) is None)
+            check('1: proofs page reports the host runs from host-runs.json, no stale "not run" line', 'not yet run' not in text and runs['claude']['surface'] in text and runs['chatgpt']['surface'] in text)
+            notes = await p.locator('ul.checks .m').all_inner_texts()
+            bad = [n for n in notes if not n.startswith('[') or (len(n) > 224 and not n.endswith('[…]]'))]
+            check('18 ter: proofs notes are whole, or cut at a word with an explicit ellipsis', notes and not bad and 'scop)' not in text, f'{len(notes)} notes, {len(bad)} bad')
             await c.close()
 
 
