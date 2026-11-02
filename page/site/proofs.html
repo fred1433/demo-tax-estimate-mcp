@@ -1,0 +1,177 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tax estimate demo proofs</title><meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="icon" href="favicon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+.proofs{max-width:1100px;margin:0 auto;padding:40px 16px 72px}
+.proofs h1{font-size:2rem;font-weight:700;line-height:1.15;margin:0 0 12px;letter-spacing:-.01em}
+.proofs h2{font-size:1.2rem;margin:40px 0 10px;padding-top:12px;border-top:2px solid var(--ink)}
+.proofs p,.proofs li{max-width:78ch;overflow-wrap:anywhere}
+.tbl{overflow-x:auto;border:1px solid var(--rule-soft);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:880px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+th{font-weight:600;color:var(--muted)}
+td:nth-child(n+5){text-align:right;white-space:nowrap}
+.m{color:var(--muted);font-size:.84em}
+ul.checks{padding-left:1.1em;font-size:.9rem}
+li.ko{color:var(--owe);font-weight:600}
+code{font-size:.82em}
+</style></head><body>
+<header class="masthead"><div class="wrap mast-row"><a class="brand" href="./"><img src="favicon.svg" alt="" width="22" height="22"> Back to the demo</a><p class="notice">Independent demo · sample tax data. Not affiliated with FileTax.com.</p></div></header>
+<main class="proofs">
+<h1>What is behind the demo</h1>
+<p>Generated from the test outputs on Nov 2, 2026. Source code: <a href="https://github.com/fred1433/demo-tax-estimate-mcp">github.com/fred1433/demo-tax-estimate-mcp</a>.</p>
+
+<h2>The journey, checked</h2>
+<p><strong>Scripted MCP client</strong> (@modelcontextprotocol/client 2.4.0) against the live server, Nov 2, 2026: 42 of 42 checks passed. The same script against a local run: 42 of 42, including the expired-reference case that needs the signing secret.</p>
+<ul class="checks"><li class="ok">Pass: CLAUDE 2025-era initialize handshake answered <span class="m">(protocolVersion 2025-11-25)</span></li>
+<li class="ok">Pass: CLAUDE tools/list without sign-in returns both tools</li>
+<li class="ok">Pass: CLAUDE annotations exact</li>
+<li class="ok">Pass: CLAUDE formal input and output schemas</li>
+<li class="ok">Pass: CLAUDE card linked by _meta.ui.resourceUri</li>
+<li class="ok">Pass: CLAUDE card resource is text/html;profile=mcp-app <span class="m">(ui.domain 6049d9b0c73c3693527e0a4a7053514d.claudemcpcontent.com)</span></li>
+<li class="ok">Pass: CLAUDE anonymous estimate (no token) <span class="m">(refund 1219, 34 ms)</span></li>
+<li class="ok">Pass: CLAUDE out-of-scope profile refused with a reason</li>
+<li class="ok">Pass: CLAUDE Save without token: HTTP 401 with WWW-Authenticate before the MCP layer <span class="m">(Bearer error=&#34;invalid_token&#34;, error_description=&#34;Sign in to save this estimate&#34;, resource_metadata=&#34;https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/mcp/claude&#34;, scope=&#34;estimates:write&#34;)</span></li>
+<li class="ok">Pass: CLAUDE authorization request: PKCE S256 and resource indicator</li>
+<li class="ok">Pass: CLAUDE sign-up page names the requesting app and the redirect host, no SSN field</li>
+<li class="ok">Pass: CLAUDE RFC 9207 iss returned and equal to the issuer</li>
+<li class="ok">Pass: CLAUDE account created during authorization, tokens issued <span class="m">(sign-up round trip 2528 ms)</span></li>
+<li class="ok">Pass: CLAUDE resumed Save stores the estimate shown <span class="m">(sav_my9wcysac2tb in Demo account YBKM, 5168 ms from the first Save)</span></li>
+<li class="ok">Pass: CLAUDE Save repeated (twice in parallel) returns the same record</li>
+<li class="ok">Pass: CLAUDE an account_id argument is rejected by the schema</li>
+<li class="ok">Pass: CLAUDE tampered reference: explicit error, nothing saved</li>
+<li class="ok">Pass: CLAUDE owner comes from the token: a second account gets a separate record</li>
+<li class="ok">Pass: CLAUDE token refused on the other endpoint (audience check)</li>
+<li class="ok">Pass: CHATGPT 2025-era initialize handshake answered <span class="m">(protocolVersion 2025-11-25)</span></li>
+<li class="ok">Pass: CHATGPT tools/list without sign-in returns both tools</li>
+<li class="ok">Pass: CHATGPT annotations exact</li>
+<li class="ok">Pass: CHATGPT formal input and output schemas</li>
+<li class="ok">Pass: CHATGPT card linked by _meta.ui.resourceUri</li>
+<li class="ok">Pass: CHATGPT securitySchemes: estimate noauth, save oauth2</li>
+<li class="ok">Pass: CHATGPT card resource is text/html;profile=mcp-app <span class="m">(no ui.domain (ChatGPT default sandbox))</span></li>
+<li class="ok">Pass: CHATGPT anonymous estimate (no token) <span class="m">(refund 1219, 22 ms)</span></li>
+<li class="ok">Pass: CHATGPT out-of-scope profile refused with a reason</li>
+<li class="ok">Pass: CHATGPT Save without token: tool error carrying _meta[&#34;mcp/www_authenticate&#34;] with error and error_description <span class="m">(Bearer resource_metadata=&#34;https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/mcp/chatgpt&#34;, error=&#34;insufficient_scope&#34;, error_description=&#34;Create or connect a demo account to save this estimate&#34;, scop)</span></li>
+<li class="ok">Pass: CHATGPT OAuth started from the challenge</li>
+<li class="ok">Pass: CHATGPT authorization request: PKCE S256 and resource indicator</li>
+<li class="ok">Pass: CHATGPT sign-up page names the requesting app and the redirect host, no SSN field</li>
+<li class="ok">Pass: CHATGPT RFC 9207 iss returned and equal to the issuer</li>
+<li class="ok">Pass: CHATGPT account created during authorization, tokens issued <span class="m">(sign-up round trip 2456 ms)</span></li>
+<li class="ok">Pass: CHATGPT resumed Save stores the estimate shown <span class="m">(sav_fd4jttzra58d in Demo account JJZ9, 5018 ms from the first Save)</span></li>
+<li class="ok">Pass: CHATGPT Save repeated (twice in parallel) returns the same record</li>
+<li class="ok">Pass: CHATGPT an account_id argument is rejected by the schema</li>
+<li class="ok">Pass: CHATGPT tampered reference: explicit error, nothing saved</li>
+<li class="ok">Pass: CHATGPT owner comes from the token: a second account gets a separate record</li>
+<li class="ok">Pass: CHATGPT token refused on the other endpoint (audience check)</li>
+<li class="ok">Pass: ChatGPT&#39;s published CIMD document (https://chatgpt.com/oauth/client.json) is fetched and accepted; the sign-up page names it <span class="m">(HTTP 200)</span></li>
+<li class="ok">Pass: Claude Code&#39;s published CIMD document (https://claude.ai/oauth/claude-code-client-metadata) is fetched and accepted; the sign-up page names it <span class="m">(HTTP 200)</span></li></ul>
+<p><strong>Web twin in a real browser</strong> (Chromium (Playwright), desktop 1440 and 390 px), Nov 2, 2026: 18 of 18 checks passed.</p>
+<ul class="checks"><li class="ok">Pass: Maya: estimate shown without an account, equal to the IRS-derived reference <span class="m">($1,219)</span></li>
+<li class="ok">Pass: Jordan and Sam: estimate updates to the reference <span class="m">($2,997)</span></li>
+<li class="ok">Pass: View assumptions opens and shows the draft status of the 2026 tables</li>
+<li class="ok">Pass: sign-up page names the requesting app from its verified CIMD domain <span class="m">(The AI Pipe demo service Create a demo account to save your estimate The web estimator is asking to save tax estimates to an account on this demo service. After)</span></li>
+<li class="ok">Pass: sign-up page has no SSN field and no FileTax logo</li>
+<li class="ok">Pass: back on the page, the same estimate saved <span class="m">(5.1 s from click to saved (scripted, no typing delay))</span></li>
+<li class="ok">Pass: the authorization code left the address bar</li>
+<li class="ok">Pass: journey shows the four steps done</li>
+<li class="ok">Pass: Save again returns the same record <span class="m">(sav_pqfszcymnsar)</span></li>
+<li class="ok">Pass: Meta server event preview shown, not sent, without amounts or email <span class="m">(events: CompleteRegistration, Lead)</span></li>
+<li class="ok">Pass: returning visitor is offered the existing demo account</li>
+<li class="ok">Pass: second estimate saved into the same account <span class="m">(Saved to Demo account BM5G)</span></li>
+<li class="ok">Pass: cancelled sign-up: nothing saved, said so</li>
+<li class="ok">Pass: edited profile in the EIC range is refused with the reason</li>
+<li class="ok">Pass: Claude tab shows its panel and the prefilled Add to Claude link</li>
+<li class="ok">Pass: ChatGPT tab shows its panel</li>
+<li class="ok">Pass: no JavaScript errors</li>
+<li class="ok">Pass: 390 px: no horizontal scroll <span class="m">(scrollWidth 390)</span></li></ul>
+<p><strong>Inside chatgpt.com and claude.ai:</strong> not yet run. The demo page shows those recordings once they exist; nothing here claims them.</p>
+
+<h2>Tax references</h2>
+<p>Engine 0.3.0, a stand-in kept small on purpose. Expected values come from <code>reference/derive_expected.py</code>, which reads the IRS PDFs (Tax Table rows and Tax Computation Worksheet rows from the text of the publications) and follows Form 1040 and Schedule 8812 by hand, in a different language from the engine. The engine also reproduces every Tax Table row of both years for single, married filing jointly and head of household (2060 rows for 2026, 2060 for 2025). Unit tests: 37 passed, 0 failed.</p>
+<p>2026 reference: Publication 1040 (2026), IRS draft dated Aug 28, 2026, <a href="https://www.irs.gov/pub/irs-dft/p1040--dft.pdf">irs.gov</a>, SHA-256 <code>407bc35ab09aaf03…</code>. It is an IRS draft and can change. 2025 reference: Publication 1040 (2025), <a href="https://www.irs.gov/pub/irs-pdf/p1040.pdf">irs.gov</a>. Standard deductions, credit amounts and Earned Income Credit limits: Rev. Proc. 2025-32 for 2026; the 2025 Form 1040 and Schedule 8812 instructions for 2025.</p>
+<div class="tbl"><table>
+<thead><tr><th>Profile</th><th>Year</th><th>Inputs (fictitious)</th><th>Method</th><th>Taxable income</th><th>Tax</th><th>Child credits</th><th>Engine result</th><th>IRS reference (ours)</th><th>Gap</th></tr></thead>
+<tbody><tr><td>p01</td><td>2026</td><td>Single, 0 children<br><span class="m">$58,400 wages, $6,050 withheld</span></td>
+    <td>Tax Table</td><td>$42,300</td><td>$4,831</td><td>$0</td>
+    <td><strong>Refund $1,219</strong></td><td>Refund $1,219</td><td>$0</td></tr>
+<tr><td>p02</td><td>2026</td><td>Married jointly, 2 children<br><span class="m">$128,000 wages, $9,600 withheld</span></td>
+    <td>Tax Table</td><td>$95,800</td><td>$11,003</td><td>$4,400</td>
+    <td><strong>Refund $2,997</strong></td><td>Refund $2,997</td><td>$0</td></tr>
+<tr><td>p03</td><td>2026</td><td>Head of household, 1 child<br><span class="m">$61,500 wages, $4,300 withheld</span></td>
+    <td>Tax Table</td><td>$37,350</td><td>$4,131</td><td>$2,200</td>
+    <td><strong>Refund $2,369</strong></td><td>Refund $2,369</td><td>$0</td></tr>
+<tr><td>p04</td><td>2026</td><td>Single, 0 children<br><span class="m">$172,000 wages, $31,500 withheld</span></td>
+    <td>Worksheet</td><td>$155,900</td><td>$30,014</td><td>$0</td>
+    <td><strong>Refund $1,486</strong></td><td>Refund $1,486</td><td>$0</td></tr>
+<tr><td>p05</td><td>2026</td><td>Married jointly, 0 children<br><span class="m">$96,000 wages, $7,800 withheld</span></td>
+    <td>Tax Table</td><td>$63,800</td><td>$7,163</td><td>$0</td>
+    <td><strong>Refund $637</strong></td><td>Refund $637</td><td>$0</td></tr>
+<tr><td>p06</td><td>2026</td><td>Single, 1 child<br><span class="m">$52,000 wages, $2,900 withheld</span></td>
+    <td>Tax Table</td><td>$35,900</td><td>$4,063</td><td>$2,200</td>
+    <td><strong>Refund $1,037</strong></td><td>Refund $1,037</td><td>$0</td></tr>
+<tr><td>p07</td><td>2026</td><td>Head of household, 2 children<br><span class="m">$59,000 wages, $1,200 withheld</span></td>
+    <td>Tax Table</td><td>$34,850</td><td>$3,831</td><td>$4,400</td>
+    <td><strong>Refund $1,769</strong></td><td>Refund $1,769</td><td>$0</td></tr>
+<tr><td>p08</td><td>2026</td><td>Married jointly, 1 child<br><span class="m">$199,000 wages, $22,000 withheld</span></td>
+    <td>Worksheet</td><td>$166,800</td><td>$26,120</td><td>$2,200</td>
+    <td><strong>Owed $1,920</strong></td><td>Owed $1,920</td><td>$0</td></tr>
+<tr><td>p09</td><td>2026</td><td>Single, 0 children<br><span class="m">$41,000 wages, $2,100 withheld</span></td>
+    <td>Tax Table</td><td>$24,900</td><td>$2,743</td><td>$0</td>
+    <td><strong>Owed $643</strong></td><td>Owed $643</td><td>$0</td></tr>
+<tr><td>p10</td><td>2026</td><td>Married jointly, 2 children<br><span class="m">$66,500 wages, $1,500 withheld</span></td>
+    <td>Tax Table</td><td>$34,300</td><td>$3,623</td><td>$4,400</td>
+    <td><strong>Refund $2,277</strong></td><td>Refund $2,277</td><td>$0</td></tr>
+<tr><td>y25a</td><td>2025</td><td>Single, 0 children<br><span class="m">$50,000 wages, $4,200 withheld</span></td>
+    <td>Tax Table</td><td>$34,250</td><td>$3,875</td><td>$0</td>
+    <td><strong>Refund $325</strong></td><td>Refund $325</td><td>$0</td></tr>
+<tr><td>y25b</td><td>2025</td><td>Married jointly, 2 children<br><span class="m">$128,000 wages, $9,600 withheld</span></td>
+    <td>Tax Table</td><td>$96,500</td><td>$11,106</td><td>$4,400</td>
+    <td><strong>Refund $2,894</strong></td><td>Refund $2,894</td><td>$0</td></tr>
+<tr><td>y25c</td><td>2025</td><td>Head of household, 1 child<br><span class="m">$61,500 wages, $4,300 withheld</span></td>
+    <td>Tax Table</td><td>$37,875</td><td>$4,205</td><td>$2,200</td>
+    <td><strong>Refund $2,295</strong></td><td>Refund $2,295</td><td>$0</td></tr>
+<tr><td>y25d</td><td>2025</td><td>Single, 0 children<br><span class="m">$172,000 wages, $31,500 withheld</span></td>
+    <td>Worksheet</td><td>$156,250</td><td>$30,347</td><td>$0</td>
+    <td><strong>Refund $1,153</strong></td><td>Refund $1,153</td><td>$0</td></tr></tbody></table></div>
+<p><strong>Parity with FileTax engine: to verify after access.</strong> Matching IRS tables is not the same promise as matching FileTax.com's engine to the dollar; that needs its ten reference profiles or its API.</p>
+<p>Refused, never estimated (one test each):</p>
+<ul><li><strong>eic_may_apply</strong>: With $40,020 of wages and 1 qualifying child, the Earned Income Credit may apply (it phases out completely at $50,434 for 2025). This stand-in engine does not compute it, so it gives no estimate rather than a wrong one.</li>
+<li><strong>situation_tips</strong>: Tips (Schedule 1-A, no tax on tips): not handled by this stand-in engine.</li>
+<li><strong>three_or_more_children</strong>: Three or more qualifying children use Schedule 8812 Part II-B, which this stand-in engine does not compute.</li>
+<li><strong>unsupported_filing_status</strong>: Married filing separately is not covered by this stand-in engine. Covered: single, married filing jointly, head of household.</li>
+<li><strong>age_65_or_older</strong>: Filers 65 or older get an additional standard deduction and may qualify for the senior deduction on Schedule 1-A. This stand-in engine does not compute them yet.</li>
+<li><strong>wages_above_limit</strong>: Wages above $200,000 bring in Additional Medicare Tax and credit phase-outs this stand-in engine does not handle.</li>
+<li><strong>head_of_household_not_confirmed</strong>: Head of household needs a confirmation that you are unmarried (or considered unmarried), paid more than half the cost of keeping up a home, and a qualifying person lived with you. This tool does not infer it from having a child.</li>
+<li><strong>situation_charitable_donations</strong>: Charitable cash donations (2026 deduction for non-itemizers): not handled by this stand-in engine.</li>
+<li><strong>eic_may_apply</strong>: With $18,000 of wages and 0 qualifying children, the Earned Income Credit may apply (it phases out completely at $19,540 for 2026). This stand-in engine does not compute it, so it gives no estimate rather than a wrong one.</li>
+<li><strong>child_rules_not_confirmed</strong>: The child tax credit needs a confirmation that each child is under 17 at year end, lived with you more than half the year, is your dependent, and has an SSN valid for employment, and that you (or one spouse on a joint return) have a valid SSN.</li></ul>
+<p>Line names follow the 2025 Form 1040. Every input is a full-year expected amount. Not computed, so refused: the Earned Income Credit, three or more children, other dependents, 65 or older, blindness, being someone's dependent, Schedule 1-A items (tips, overtime, car loan interest, senior deduction), the 2026 charitable deduction for non-itemizers, self-employment, investment income, itemizing, education, child care, retirement contributions, Marketplace insurance, foreign income, filing separately and wages over $200,000.</p>
+
+<h2>Logs and the Meta event</h2>
+<p>The Worker writes one kind of log line: a closed list of fields (event, surface, outcome, duration, a random correlation id, a code). Library output is replaced by a fixed marker. Invocation logs and traces are off. Workers Logs still attach the request URL to each line, so requests whose URL carries a query string (the OAuth authorization request) write no line at all. The page Worker, which receives the OAuth callback, has logging off.</p>
+<p><strong>Check on the live Worker</strong>, Nov 2, 2026: 16 steps (estimate, refusal, validation error, sign-in refused, sign-up, Save, repeated Save, tampered reference, invalid token, token refresh, on both endpoints) with recognisable values, then 20 values searched in 40 lines read back from Cloudflare Workers Logs (telemetry query API): <strong>0 found</strong>. Fields seen: cid, code, evt, ms, outcome, surface.</p>
+<p>Same check on a local run (with the expired-reference case): 0 found in 43 lines.</p>
+<p>Meta Conversions API: preview only, never sent. After a confirmed sign-up (<code>CompleteRegistration</code>) and a confirmed first Save (<code>Lead</code>), the server stores the event it would send, deduplicated by <code>event_id</code>. It holds a hashed email, a hashed account id, the surface and the action source; no amount, no refund or balance category, no tax year, no IP address or user agent, since on ChatGPT and Claude the request comes from the host's servers, not from the taxpayer. No compliance claim is made.</p>
+
+<h2>OAuth and MCP, as built</h2>
+<ul>
+<li>Authorization server metadata: <a href="https://tax-mcp-demo.theaipipe.com/.well-known/oauth-authorization-server">/.well-known/oauth-authorization-server</a>. Client ID Metadata Documents, PKCE S256 only, RFC 9207 <code>iss</code> on every authorization response, resource indicators bound to one audience per token; Dynamic Client Registration kept for compatibility. Library: <code>@cloudflare/workers-oauth-provider</code> 1.2.4 with the <code>global_fetch_strictly_public</code> flag.</li>
+<li>Claude: <code>/mcp/claude</code>. Discovery and the estimate work without a token; an unauthenticated <code>save_estimate</code> gets HTTP 401 with <code>WWW-Authenticate</code> before the MCP layer runs. Card <code>ui.domain</code> computed from the server URL as Claude documents.</li>
+<li>ChatGPT: <code>/mcp/chatgpt</code>. <code>securitySchemes</code> per tool (<code>noauth</code> for the estimate, <code>oauth2</code> for Save); an unauthenticated Save returns a tool error carrying <code>_meta["mcp/www_authenticate"]</code>.</li>
+<li>Both endpoints serve 2025-era clients (initialize handshake) and 2026-07-28 clients (stateless), through <code>@modelcontextprotocol/server</code> 2.4.0. One MCP Apps card (<code>ui://tax-estimate/card.html</code>, <code>text/html;profile=mcp-app</code>) with the MCP Apps SDK; Save goes through the host bridge and no token reaches the card.</li>
+<li>Save: the estimate tool persists nothing (<code>readOnlyHint: true</code>); its reference is signed and expires after 24 hours. Save verifies it, recomputes with the same engine version and refuses if the result would differ. One record per account and estimate: a repeated Save returns the same record. The account comes from the validated token only.</li>
+</ul>
+
+<h2>What's left for a real submission</h2>
+<ul>
+<li>FileTax.com's engine behind the same tool contract, and its ten reference profiles to show parity to the dollar.</li>
+<li>FileTax.com's account system as the sign-up and sign-in step, on a FileTax.com domain: Anthropic's review expects the server domain to match the service (<a href="https://claude.com/docs/connectors/building/review-criteria">Claude review criteria</a>).</li>
+<li>A sign-in path for an existing account with a password: OpenAI asks for a login and password for a fully featured demo account and rejects plugins whose review needs a new sign-up (<a href="https://developers.openai.com/plugins/plugin-guidelines">plugin guidelines</a>). The demo here only creates accounts.</li>
+<li>OpenAI: verified developer identity, plugin ZIP with metadata, domain verification of the MCP host, five positive and three negative test cases, a video walkthrough, support, privacy and terms URLs (<a href="https://developers.openai.com/plugins/deploy/submission">submission guide</a>).</li>
+<li>Anthropic: test credentials for a populated account, public documentation, privacy policy and support contact, and carousel screenshots for an MCP App (<a href="https://claude.com/docs/connectors/building/submission">submission guide</a>).</li>
+<li>Why this demo is not submitted: it would list an app for FileTax.com's users under someone else's name, and OpenAI does not accept demo plugins (<a href="https://developers.openai.com/plugins/plugin-guidelines">plugin guidelines</a>).</li>
+</ul>
+</main></body></html>

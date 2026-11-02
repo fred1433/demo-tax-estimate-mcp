@@ -1,0 +1,7 @@
+node_modules/
+.wrangler/
+.dev.vars
+app/.dev.vars
+reference/pdf/
+tests/out/
+*.log

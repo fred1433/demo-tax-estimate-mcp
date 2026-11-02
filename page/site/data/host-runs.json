@@ -1,0 +1,5 @@
+{
+  "note": "Filled in by the host tests (HOST_TESTS.md). Only runs that actually happened go here.",
+  "chatgpt": { "status": "pending", "surface": null, "date": null, "video": null, "poster": null, "runs": [] },
+  "claude": { "status": "pending", "surface": null, "date": null, "video": null, "poster": null, "runs": [] }
+}

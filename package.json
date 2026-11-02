@@ -1,0 +1,26 @@
+{
+  "name": "demo-tax-estimate-mcp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:card": "node scripts/build-card.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "deploy:app": "npm run build:card && cd app && npx wrangler deploy",
+    "deploy:page": "cd page && npx wrangler deploy"
+  },
+  "dependencies": {
+    "@cloudflare/workers-oauth-provider": "1.2.4",
+    "@modelcontextprotocol/server": "2.4.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.4.0",
+    "@modelcontextprotocol/ext-apps": "2.0.4",
+    "esbuild": "0.28.2",
+    "wrangler": "4.156.1"
+  },
+  "allowScripts": {
+    "workerd@1.20261101.1": true,
+    "esbuild@0.28.2": true
+  }
+}

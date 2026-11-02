@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tax estimate, saved in chat</title>
+<meta name="description" content="A working ChatGPT and Claude app built for FileTax.com as an independent demo: a federal refund estimate without an account, then a Save that creates a demo account through OAuth and stores that same estimate.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap mast-row">
+    <a class="brand" href="https://theaipipe.com" rel="noopener"><img src="favicon.svg" alt="" width="22" height="22"> The AI Pipe</a>
+    <p class="notice">Independent demo · sample tax data. Built for FileTax.com, not affiliated with FileTax.com.</p>
+  </div>
+</header>
+
+<main>
+  <section class="wrap hero" aria-labelledby="h1">
+    <h1 id="h1"><span>Estimate first.</span> <span>Sign up at Save.</span> <span>Back in the same chat.</span></h1>
+    <p class="lede">A working app for ChatGPT and Claude with two tools: a federal refund estimate that needs no account, and a Save that creates an account through OAuth and stores that exact estimate. Below is the same card and the same sign-up, playable now.</p>
+  </section>
+
+  <section class="wrap twin" id="try" aria-labelledby="try-h">
+    <div class="gutter"><h2 id="try-h">Try it here</h2></div>
+    <div class="twin-grid">
+      <div class="twin-controls">
+        <fieldset class="filers">
+          <legend>Pick a sample filer</legend>
+          <label class="filer"><input type="radio" name="filer" value="p01" checked><span class="f-name">Maya</span><span class="f-facts">Single, no children. $58,400 in wages, $6,050 withheld.</span></label>
+          <label class="filer"><input type="radio" name="filer" value="p02"><span class="f-name">Jordan and Sam</span><span class="f-facts">Married filing jointly, two children under 17. $128,000 in wages, $9,600 withheld.</span></label>
+          <label class="filer"><input type="radio" name="filer" value="p03"><span class="f-name">Ana</span><span class="f-facts">Head of household, one child under 17. $61,500 in wages, $4,300 withheld.</span></label>
+        </fieldset>
+        <details class="edit">
+          <summary>Change the wages or withholding</summary>
+          <div class="edit-row">
+            <label>Full-year W-2 wages<input id="wages" type="number" inputmode="numeric" min="0" step="100"></label>
+            <label>Federal tax withheld<input id="withheld" type="number" inputmode="numeric" min="0" step="50"></label>
+          </div>
+          <button type="button" class="link-btn" id="recalc">Estimate again</button>
+          <p class="small">Cases the stand-in engine does not cover (the Earned Income Credit range, for one) come back refused, with the reason.</p>
+        </details>
+        <figure class="prompt">
+          <figcaption>What someone types in ChatGPT or Claude</figcaption>
+          <blockquote id="prompt-text"></blockquote>
+        </figure>
+      </div>
+
+      <div class="twin-stage">
+        <div id="card" class="card-slot" aria-live="polite"><p class="small">Loading the estimate…</p></div>
+        <ol class="journey" id="journey" aria-label="Save journey">
+          <li data-step="estimate"><span class="j-dot"></span><span class="j-text">Estimate shown, no account</span><span class="j-time"></span></li>
+          <li data-step="save"><span class="j-dot"></span><span class="j-text">Save pressed</span><span class="j-time"></span></li>
+          <li data-step="signup"><span class="j-dot"></span><span class="j-text">Demo account created on the sign-up page</span><span class="j-time"></span></li>
+          <li data-step="saved"><span class="j-dot"></span><span class="j-text">Back on this page, the same estimate saved</span><span class="j-time"></span></li>
+        </ol>
+        <p class="small twin-note" id="twin-note">The sign-up page belongs to the demo service on tax-mcp-demo.theaipipe.com. It asks for an email only, does not verify it, and deletes the account after 7 days. FileTax.com's own sign-up would add its checks, so the time shown here measures this demo, not that flow.</p>
+        <details class="events" id="events" hidden>
+          <summary>Server event prepared for Meta (not sent)</summary>
+          <pre id="events-json"></pre>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap hosts" id="hosts" aria-labelledby="hosts-h">
+    <div class="gutter"><h2 id="hosts-h">In ChatGPT and Claude</h2></div>
+    <div class="hosts-body">
+      <div class="tabs" role="tablist" aria-label="Host">
+        <button role="tab" id="tab-chatgpt" aria-controls="panel-chatgpt" aria-selected="true">ChatGPT</button>
+        <button role="tab" id="tab-claude" aria-controls="panel-claude" aria-selected="false" tabindex="-1">Claude</button>
+      </div>
+      <div class="panel" role="tabpanel" id="panel-chatgpt" aria-labelledby="tab-chatgpt">
+        <div class="rec" data-host="chatgpt"></div>
+        <div class="add">
+          <h3>Add it to your ChatGPT</h3>
+          <ol>
+            <li>Open <a href="https://chatgpt.com/plugins" target="_blank" rel="noopener">ChatGPT Plugins</a>, select the plus button, then Add custom MCP server.</li>
+            <li>Server URL: <code class="copy" data-copy="https://tax-mcp-demo.theaipipe.com/mcp/chatgpt">https://tax-mcp-demo.theaipipe.com/mcp/chatgpt</code></li>
+            <li>Authentication: OAuth or no authentication. Review the warning, create it, install it, then mention it with @ in a chat.</li>
+          </ol>
+          <p class="small">ChatGPT on the web; workspace permissions for custom MCP servers apply.</p>
+        </div>
+      </div>
+      <div class="panel" role="tabpanel" id="panel-claude" aria-labelledby="tab-claude" hidden>
+        <div class="rec" data-host="claude"></div>
+        <div class="add">
+          <h3>Add it to your Claude</h3>
+          <p><a class="btn" href="https://claude.ai/customize/connectors?modal=add-custom-connector&amp;connectorName=Tax%20estimate%20demo&amp;connectorUrl=https%3A%2F%2Ftax-mcp-demo.theaipipe.com%2Fmcp%2Fclaude" target="_blank" rel="noopener">Add to Claude</a></p>
+          <p class="small">Opens Claude's Add custom connector dialog with the name and URL filled in; you confirm there. Server URL: <code class="copy" data-copy="https://tax-mcp-demo.theaipipe.com/mcp/claude">https://tax-mcp-demo.theaipipe.com/mcp/claude</code>.</p>
+        </div>
+      </div>
+      <div class="verified">
+        <h3>Checked so far</h3>
+        <ul id="verified-list"></ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <div class="gutter"></div>
+  <div class="foot-body">
+    <p>The tax engine here is a stand-in, small on purpose: tax years 2026 and 2025, W-2 wages, standard deduction, child tax credit, and refusals for everything else. It is the part FileTax.com's engine replaces. Nothing here was submitted for listing by OpenAI or Anthropic: an independent demo can't submit on FileTax.com's behalf.</p>
+    <p><a href="proofs.html">Tests, tax references, log check and what's left for a real submission</a></p>
+    <p class="by">Built by Frederic de Lavenne de Choulot, The AI Pipe. <a href="https://cal.theaipipe.com">Book a 15-minute call</a></p>
+  </div>
+</footer>
+
+<script type="module" src="twin.js"></script>
+</body>
+</html>

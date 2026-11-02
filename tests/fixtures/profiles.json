@@ -1,0 +1,39 @@
+{
+  "note": "Ten fictitious 2026 profiles and four 2025 profiles. Inputs only; expected values are derived by reference/derive_expected.py from the IRS publications, not from the engine.",
+  "common": {
+    "taxpayer_age_65_or_older": false,
+    "taxpayer_blind": false,
+    "can_be_claimed_as_dependent": false,
+    "other_dependents": 0,
+    "other_situations": ["none"]
+  },
+  "joint_extra": { "spouse_age_65_or_older": false, "spouse_blind": false },
+  "profiles": [
+    { "id": "p01", "label": "Maya, single, no children", "tax_year": 2026, "filing_status": "single", "w2_wages": 58400, "federal_income_tax_withheld": 6050, "qualifying_children_under_17": 0 },
+    { "id": "p02", "label": "Jordan and Sam, married, two children", "tax_year": 2026, "filing_status": "married_filing_jointly", "w2_wages": 128000, "federal_income_tax_withheld": 9600, "qualifying_children_under_17": 2, "children_meet_ctc_rules": true },
+    { "id": "p03", "label": "Ana, head of household, one child", "tax_year": 2026, "filing_status": "head_of_household", "head_of_household_confirmed": true, "w2_wages": 61500, "federal_income_tax_withheld": 4300, "qualifying_children_under_17": 1, "children_meet_ctc_rules": true },
+    { "id": "p04", "label": "Single, higher income (worksheet)", "tax_year": 2026, "filing_status": "single", "w2_wages": 172000, "federal_income_tax_withheld": 31500, "qualifying_children_under_17": 0 },
+    { "id": "p05", "label": "Married, no children", "tax_year": 2026, "filing_status": "married_filing_jointly", "w2_wages": 96000, "federal_income_tax_withheld": 7800, "qualifying_children_under_17": 0 },
+    { "id": "p06", "label": "Single with one child, filing as single", "tax_year": 2026, "filing_status": "single", "w2_wages": 52000, "federal_income_tax_withheld": 2900, "qualifying_children_under_17": 1, "children_meet_ctc_rules": true },
+    { "id": "p07", "label": "Head of household, two children, refundable credit", "tax_year": 2026, "filing_status": "head_of_household", "head_of_household_confirmed": true, "w2_wages": 59000, "federal_income_tax_withheld": 1200, "qualifying_children_under_17": 2, "children_meet_ctc_rules": true },
+    { "id": "p08", "label": "Married, one child, worksheet", "tax_year": 2026, "filing_status": "married_filing_jointly", "w2_wages": 199000, "federal_income_tax_withheld": 22000, "qualifying_children_under_17": 1, "children_meet_ctc_rules": true },
+    { "id": "p09", "label": "Single, under-withheld", "tax_year": 2026, "filing_status": "single", "w2_wages": 41000, "federal_income_tax_withheld": 2100, "qualifying_children_under_17": 0 },
+    { "id": "p10", "label": "Married, two children, refundable credit", "tax_year": 2026, "filing_status": "married_filing_jointly", "w2_wages": 66500, "federal_income_tax_withheld": 1500, "qualifying_children_under_17": 2, "children_meet_ctc_rules": true },
+    { "id": "y25a", "label": "2025: single, $50,000", "tax_year": 2025, "filing_status": "single", "w2_wages": 50000, "federal_income_tax_withheld": 4200, "qualifying_children_under_17": 0 },
+    { "id": "y25b", "label": "2025: married, two children", "tax_year": 2025, "filing_status": "married_filing_jointly", "w2_wages": 128000, "federal_income_tax_withheld": 9600, "qualifying_children_under_17": 2, "children_meet_ctc_rules": true },
+    { "id": "y25c", "label": "2025: head of household, one child", "tax_year": 2025, "filing_status": "head_of_household", "head_of_household_confirmed": true, "w2_wages": 61500, "federal_income_tax_withheld": 4300, "qualifying_children_under_17": 1, "children_meet_ctc_rules": true },
+    { "id": "y25d", "label": "2025: single, worksheet", "tax_year": 2025, "filing_status": "single", "w2_wages": 172000, "federal_income_tax_withheld": 31500, "qualifying_children_under_17": 0 }
+  ],
+  "refusals": [
+    { "id": "r01", "expect": "eic_may_apply", "tax_year": 2025, "filing_status": "head_of_household", "head_of_household_confirmed": true, "w2_wages": 40020, "federal_income_tax_withheld": 1500, "qualifying_children_under_17": 1, "children_meet_ctc_rules": true },
+    { "id": "r02", "expect": "situation_tips", "tax_year": 2026, "filing_status": "single", "w2_wages": 48000, "federal_income_tax_withheld": 3000, "qualifying_children_under_17": 0, "other_situations": ["tips"] },
+    { "id": "r03", "expect": "three_or_more_children", "tax_year": 2026, "filing_status": "married_filing_jointly", "w2_wages": 150000, "federal_income_tax_withheld": 9000, "qualifying_children_under_17": 3, "children_meet_ctc_rules": true },
+    { "id": "r04", "expect": "unsupported_filing_status", "tax_year": 2026, "filing_status": "married_filing_separately", "w2_wages": 70000, "federal_income_tax_withheld": 6000, "qualifying_children_under_17": 0 },
+    { "id": "r05", "expect": "age_65_or_older", "tax_year": 2026, "filing_status": "single", "w2_wages": 60000, "federal_income_tax_withheld": 6000, "qualifying_children_under_17": 0, "taxpayer_age_65_or_older": true },
+    { "id": "r06", "expect": "wages_above_limit", "tax_year": 2026, "filing_status": "single", "w2_wages": 240000, "federal_income_tax_withheld": 40000, "qualifying_children_under_17": 0 },
+    { "id": "r07", "expect": "head_of_household_not_confirmed", "tax_year": 2026, "filing_status": "head_of_household", "w2_wages": 70000, "federal_income_tax_withheld": 5000, "qualifying_children_under_17": 1, "children_meet_ctc_rules": true },
+    { "id": "r08", "expect": "situation_charitable_donations", "tax_year": 2026, "filing_status": "married_filing_jointly", "w2_wages": 110000, "federal_income_tax_withheld": 9000, "qualifying_children_under_17": 0, "other_situations": ["charitable_donations"] },
+    { "id": "r09", "expect": "eic_may_apply", "tax_year": 2026, "filing_status": "single", "w2_wages": 18000, "federal_income_tax_withheld": 900, "qualifying_children_under_17": 0 },
+    { "id": "r10", "expect": "child_rules_not_confirmed", "tax_year": 2026, "filing_status": "single", "w2_wages": 70000, "federal_income_tax_withheld": 6000, "qualifying_children_under_17": 1 }
+  ]
+}

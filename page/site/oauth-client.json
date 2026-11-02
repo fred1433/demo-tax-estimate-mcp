@@ -1,0 +1,10 @@
+{
+  "client_id": "https://theaipipe.com/demos/tax-estimate-mcp/oauth-client.json",
+  "client_name": "Tax estimate web twin (The AI Pipe demo)",
+  "client_uri": "https://theaipipe.com/demos/tax-estimate-mcp/",
+  "redirect_uris": ["https://theaipipe.com/demos/tax-estimate-mcp/"],
+  "grant_types": ["authorization_code"],
+  "response_types": ["code"],
+  "token_endpoint_auth_method": "none",
+  "application_type": "web"
+}

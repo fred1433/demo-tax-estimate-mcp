@@ -1,0 +1,38 @@
+# MCP server, OAuth authorization server and web twin API on a neutral subdomain.
+name = "tax-mcp-demo"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+# global_fetch_strictly_public: required by @cloudflare/workers-oauth-provider for CIMD fetches.
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+workers_dev = false
+routes = [{ pattern = "tax-mcp-demo.theaipipe.com", custom_domain = true }]
+
+[[kv_namespaces]]
+binding = "OAUTH_KV"
+id = "8f06b4c4f10a400fb7cc888079fa217d"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tax-mcp-demo"
+database_id = "b7f267f3-bfba-4668-9d1a-32c008b988d3"
+
+# Daily purge of demo accounts older than 7 days and of expired OAuth records.
+[triggers]
+crons = ["17 4 * * *"]
+
+# Workers Logs keep only the closed-list events written by src/telemetry.js:
+# invocation logs (which carry the request URL) are off, traces are off.
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+invocation_logs = false
+
+[observability.traces]
+enabled = false
+
+[vars]
+ORIGIN = "https://tax-mcp-demo.theaipipe.com"
+PAGE_ORIGIN = "https://theaipipe.com"

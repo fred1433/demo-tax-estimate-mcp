@@ -1,0 +1,431 @@
+{
+  "generated_by": "reference/derive_expected.py",
+  "provenance": {
+    "2026": {
+      "document": "Publication 1040 (2026), IRS draft dated Aug 28, 2026",
+      "url": "https://www.irs.gov/pub/irs-dft/p1040--dft.pdf",
+      "sha256": "407bc35ab09aaf034689341d7469b9b082cd2ceaa652e38ca5874c1dd1c3f12e",
+      "tax_table_rows": 2060,
+      "worksheet": {
+        "single": [
+          {
+            "over": 100000,
+            "not_over": 105700,
+            "rate_pct": 22,
+            "subtract": "5288.00"
+          },
+          {
+            "over": 105700,
+            "not_over": 201775,
+            "rate_pct": 24,
+            "subtract": "7402.00"
+          },
+          {
+            "over": 201775,
+            "not_over": 256225,
+            "rate_pct": 32,
+            "subtract": "23544.00"
+          },
+          {
+            "over": 256225,
+            "not_over": 640600,
+            "rate_pct": 35,
+            "subtract": "31230.75"
+          },
+          {
+            "over": 640600,
+            "not_over": null,
+            "rate_pct": 37,
+            "subtract": "44042.75"
+          }
+        ],
+        "married_filing_jointly": [
+          {
+            "over": 100000,
+            "not_over": 100800,
+            "rate_pct": 12,
+            "subtract": "496.00"
+          },
+          {
+            "over": 100800,
+            "not_over": 211400,
+            "rate_pct": 22,
+            "subtract": "10576.00"
+          },
+          {
+            "over": 211400,
+            "not_over": 403550,
+            "rate_pct": 24,
+            "subtract": "14804.00"
+          },
+          {
+            "over": 403550,
+            "not_over": 512450,
+            "rate_pct": 32,
+            "subtract": "47088.00"
+          },
+          {
+            "over": 512450,
+            "not_over": 768700,
+            "rate_pct": 35,
+            "subtract": "62461.50"
+          },
+          {
+            "over": 768700,
+            "not_over": null,
+            "rate_pct": 37,
+            "subtract": "77835.50"
+          }
+        ],
+        "head_of_household": [
+          {
+            "over": 100000,
+            "not_over": 105700,
+            "rate_pct": 22,
+            "subtract": "7099.00"
+          },
+          {
+            "over": 105700,
+            "not_over": 201750,
+            "rate_pct": 24,
+            "subtract": "9213.00"
+          },
+          {
+            "over": 201750,
+            "not_over": 256200,
+            "rate_pct": 32,
+            "subtract": "25353.00"
+          },
+          {
+            "over": 256200,
+            "not_over": 640600,
+            "rate_pct": 35,
+            "subtract": "33039.00"
+          },
+          {
+            "over": 640600,
+            "not_over": null,
+            "rate_pct": 37,
+            "subtract": "45851.00"
+          }
+        ]
+      }
+    },
+    "2025": {
+      "document": "Publication 1040 (2025)",
+      "url": "https://www.irs.gov/pub/irs-pdf/p1040.pdf",
+      "sha256": "8ae019bd3b28b07b37e46e18597d8e899222a2224ce7482c015b130033403532",
+      "tax_table_rows": 2060,
+      "worksheet": {
+        "single": [
+          {
+            "over": 100000,
+            "not_over": 103350,
+            "rate_pct": 22,
+            "subtract": "5086.00"
+          },
+          {
+            "over": 103350,
+            "not_over": 197300,
+            "rate_pct": 24,
+            "subtract": "7153.00"
+          },
+          {
+            "over": 197300,
+            "not_over": 250525,
+            "rate_pct": 32,
+            "subtract": "22937.00"
+          },
+          {
+            "over": 250525,
+            "not_over": 626350,
+            "rate_pct": 35,
+            "subtract": "30452.75"
+          },
+          {
+            "over": 626350,
+            "not_over": null,
+            "rate_pct": 37,
+            "subtract": "42979.75"
+          }
+        ],
+        "married_filing_jointly": [
+          {
+            "over": 100000,
+            "not_over": 206700,
+            "rate_pct": 22,
+            "subtract": "10172.00"
+          },
+          {
+            "over": 206700,
+            "not_over": 394600,
+            "rate_pct": 24,
+            "subtract": "14306.00"
+          },
+          {
+            "over": 394600,
+            "not_over": 501050,
+            "rate_pct": 32,
+            "subtract": "45874.00"
+          },
+          {
+            "over": 501050,
+            "not_over": 751600,
+            "rate_pct": 35,
+            "subtract": "60905.50"
+          },
+          {
+            "over": 751600,
+            "not_over": null,
+            "rate_pct": 37,
+            "subtract": "75937.50"
+          }
+        ],
+        "head_of_household": [
+          {
+            "over": 100000,
+            "not_over": 103350,
+            "rate_pct": 22,
+            "subtract": "6825.00"
+          },
+          {
+            "over": 103350,
+            "not_over": 197300,
+            "rate_pct": 24,
+            "subtract": "8892.00"
+          },
+          {
+            "over": 197300,
+            "not_over": 250500,
+            "rate_pct": 32,
+            "subtract": "24676.00"
+          },
+          {
+            "over": 250500,
+            "not_over": 626350,
+            "rate_pct": 35,
+            "subtract": "32191.00"
+          },
+          {
+            "over": 626350,
+            "not_over": null,
+            "rate_pct": 37,
+            "subtract": "44718.00"
+          }
+        ]
+      }
+    }
+  },
+  "expected": {
+    "p01": {
+      "tax_year": 2026,
+      "method": "Tax Table row 42,300 to 42,350",
+      "adjusted_gross_income_11a": 58400,
+      "standard_deduction_12e": 16100,
+      "taxable_income_15": 42300,
+      "tax_16": 4831,
+      "child_tax_credit_19": 0,
+      "total_tax_24": 4831,
+      "federal_withholding_25d": 6050,
+      "additional_child_tax_credit_28": 0,
+      "total_payments_33": 6050,
+      "outcome": "refund",
+      "amount": 1219
+    },
+    "p02": {
+      "tax_year": 2026,
+      "method": "Tax Table row 95,800 to 95,850",
+      "adjusted_gross_income_11a": 128000,
+      "standard_deduction_12e": 32200,
+      "taxable_income_15": 95800,
+      "tax_16": 11003,
+      "child_tax_credit_19": 4400,
+      "total_tax_24": 6603,
+      "federal_withholding_25d": 9600,
+      "additional_child_tax_credit_28": 0,
+      "total_payments_33": 9600,
+      "outcome": "refund",
+      "amount": 2997
+    },
+    "p03": {
+      "tax_year": 2026,
+      "method": "Tax Table row 37,350 to 37,400",
+      "adjusted_gross_income_11a": 61500,
+      "standard_deduction_12e": 24150,
+      "taxable_income_15": 37350,
+      "tax_16": 4131,
+      "child_tax_credit_19": 2200,
+      "total_tax_24": 1931,
+      "federal_withholding_25d": 4300,
+      "additional_child_tax_credit_28": 0,
+      "total_payments_33": 4300,
+      "outcome": "refund",
+      "amount": 2369
+    },
+    "p04": {
+      "tax_year": 2026,
+      "method": "Worksheet: 24% x 155,900 minus 7402.00",
+      "adjusted_gross_income_11a": 172000,
+      "standard_deduction_12e": 16100,
+      "taxable_income_15": 155900,
+      "tax_16": 30014,
+      "child_tax_credit_19": 0,
+      "total_tax_24": 30014,
+      "federal_withholding_25d": 31500,
+      "additional_child_tax_credit_28": 0,
+      "total_payments_33": 31500,
+      "outcome": "refund",
+      "amount": 1486
+    },
+    "p05": {
+      "tax_year": 2026,
+      "method": "Tax Table row 63,800 to 63,850",
+      "adjusted_gross_income_11a": 96000,
+      "standard_deduction_12e": 32200,
+      "taxable_income_15": 63800,
+      "tax_16": 7163,
+      "child_tax_credit_19": 0,
+      "total_tax_24": 7163,
+      "federal_withholding_25d": 7800,
+      "additional_child_tax_credit_28": 0,
+      "total_payments_33": 7800,
+      "outcome": "refund",
+      "amount": 637
+    },
+    "p06": {
+      "tax_year": 2026,
+      "method": "Tax Table row 35,900 to 35,950",
+      "adjusted_gross_income_11a": 52000,
+      "standard_deduction_12e": 16100,
+      "taxable_income_15": 35900,
+      "tax_16": 4063,
+      "child_tax_credit_19": 2200,
+      "total_tax_24": 1863,
+      "federal_withholding_25d": 2900,
+      "additional_child_tax_credit_28": 0,
+      "total_payments_33": 2900,
+      "outcome": "refund",
+      "amount": 1037
+    },
+    "p07": {
+      "tax_year": 2026,
+      "method": "Tax Table row 34,850 to 34,900",
+      "adjusted_gross_income_11a": 59000,
+      "standard_deduction_12e": 24150,
+      "taxable_income_15": 34850,
+      "tax_16": 3831,
+      "child_tax_credit_19": 3831,
+      "total_tax_24": 0,
+      "federal_withholding_25d": 1200,
+      "additional_child_tax_credit_28": 569,
+      "total_payments_33": 1769,
+      "outcome": "refund",
+      "amount": 1769
+    },
+    "p08": {
+      "tax_year": 2026,
+      "method": "Worksheet: 22% x 166,800 minus 10576.00",
+      "adjusted_gross_income_11a": 199000,
+      "standard_deduction_12e": 32200,
+      "taxable_income_15": 166800,
+      "tax_16": 26120,
+      "child_tax_credit_19": 2200,
+      "total_tax_24": 23920,
+      "federal_withholding_25d": 22000,
+      "additional_child_tax_credit_28": 0,
+      "total_payments_33": 22000,
+      "outcome": "amount_owed",
+      "amount": 1920
+    },
+    "p09": {
+      "tax_year": 2026,
+      "method": "Tax Table row 24,900 to 24,950",
+      "adjusted_gross_income_11a": 41000,
+      "standard_deduction_12e": 16100,
+      "taxable_income_15": 24900,
+      "tax_16": 2743,
+      "child_tax_credit_19": 0,
+      "total_tax_24": 2743,
+      "federal_withholding_25d": 2100,
+      "additional_child_tax_credit_28": 0,
+      "total_payments_33": 2100,
+      "outcome": "amount_owed",
+      "amount": 643
+    },
+    "p10": {
+      "tax_year": 2026,
+      "method": "Tax Table row 34,300 to 34,350",
+      "adjusted_gross_income_11a": 66500,
+      "standard_deduction_12e": 32200,
+      "taxable_income_15": 34300,
+      "tax_16": 3623,
+      "child_tax_credit_19": 3623,
+      "total_tax_24": 0,
+      "federal_withholding_25d": 1500,
+      "additional_child_tax_credit_28": 777,
+      "total_payments_33": 2277,
+      "outcome": "refund",
+      "amount": 2277
+    },
+    "y25a": {
+      "tax_year": 2025,
+      "method": "Tax Table row 34,250 to 34,300",
+      "adjusted_gross_income_11a": 50000,
+      "standard_deduction_12e": 15750,
+      "taxable_income_15": 34250,
+      "tax_16": 3875,
+      "child_tax_credit_19": 0,
+      "total_tax_24": 3875,
+      "federal_withholding_25d": 4200,
+      "additional_child_tax_credit_28": 0,
+      "total_payments_33": 4200,
+      "outcome": "refund",
+      "amount": 325
+    },
+    "y25b": {
+      "tax_year": 2025,
+      "method": "Tax Table row 96,500 to 96,550",
+      "adjusted_gross_income_11a": 128000,
+      "standard_deduction_12e": 31500,
+      "taxable_income_15": 96500,
+      "tax_16": 11106,
+      "child_tax_credit_19": 4400,
+      "total_tax_24": 6706,
+      "federal_withholding_25d": 9600,
+      "additional_child_tax_credit_28": 0,
+      "total_payments_33": 9600,
+      "outcome": "refund",
+      "amount": 2894
+    },
+    "y25c": {
+      "tax_year": 2025,
+      "method": "Tax Table row 37,850 to 37,900",
+      "adjusted_gross_income_11a": 61500,
+      "standard_deduction_12e": 23625,
+      "taxable_income_15": 37875,
+      "tax_16": 4205,
+      "child_tax_credit_19": 2200,
+      "total_tax_24": 2005,
+      "federal_withholding_25d": 4300,
+      "additional_child_tax_credit_28": 0,
+      "total_payments_33": 4300,
+      "outcome": "refund",
+      "amount": 2295
+    },
+    "y25d": {
+      "tax_year": 2025,
+      "method": "Worksheet: 24% x 156,250 minus 7153.00",
+      "adjusted_gross_income_11a": 172000,
+      "standard_deduction_12e": 15750,
+      "taxable_income_15": 156250,
+      "tax_16": 30347,
+      "child_tax_credit_19": 0,
+      "total_tax_24": 30347,
+      "federal_withholding_25d": 31500,
+      "additional_child_tax_credit_28": 0,
+      "total_payments_33": 31500,
+      "outcome": "refund",
+      "amount": 1153
+    }
+  }
+}

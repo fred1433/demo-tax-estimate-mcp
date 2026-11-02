@@ -1,0 +1,572 @@
+{
+  "target": "https://tax-mcp-demo.theaipipe.com",
+  "started": "2026-11-02T13:51:59.284Z",
+  "finished": "2026-11-02T13:52:22.851Z",
+  "client": "@modelcontextprotocol/client 2.4.0",
+  "pass": 42,
+  "total": 42,
+  "results": [
+    {
+      "name": "CLAUDE 2025-era initialize handshake answered",
+      "ok": true,
+      "note": "protocolVersion 2025-11-25"
+    },
+    {
+      "name": "CLAUDE tools/list without sign-in returns both tools",
+      "ok": true
+    },
+    {
+      "name": "CLAUDE annotations exact",
+      "ok": true
+    },
+    {
+      "name": "CLAUDE formal input and output schemas",
+      "ok": true
+    },
+    {
+      "name": "CLAUDE card linked by _meta.ui.resourceUri",
+      "ok": true
+    },
+    {
+      "name": "CLAUDE card resource is text/html;profile=mcp-app",
+      "ok": true,
+      "note": "ui.domain 6049d9b0c73c3693527e0a4a7053514d.claudemcpcontent.com"
+    },
+    {
+      "name": "CLAUDE anonymous estimate (no token)",
+      "ok": true,
+      "note": "refund 1219, 34 ms"
+    },
+    {
+      "name": "CLAUDE out-of-scope profile refused with a reason",
+      "ok": true
+    },
+    {
+      "name": "CLAUDE Save without token: HTTP 401 with WWW-Authenticate before the MCP layer",
+      "ok": true,
+      "note": "Bearer error=\"invalid_token\", error_description=\"Sign in to save this estimate\", resource_metadata=\"https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/mcp/claude\", scope=\"estimates:write\""
+    },
+    {
+      "name": "CLAUDE authorization request: PKCE S256 and resource indicator",
+      "ok": true
+    },
+    {
+      "name": "CLAUDE sign-up page names the requesting app and the redirect host, no SSN field",
+      "ok": true
+    },
+    {
+      "name": "CLAUDE RFC 9207 iss returned and equal to the issuer",
+      "ok": true
+    },
+    {
+      "name": "CLAUDE account created during authorization, tokens issued",
+      "ok": true,
+      "note": "sign-up round trip 2528 ms"
+    },
+    {
+      "name": "CLAUDE resumed Save stores the estimate shown",
+      "ok": true,
+      "note": "sav_my9wcysac2tb in Demo account YBKM, 5168 ms from the first Save"
+    },
+    {
+      "name": "CLAUDE Save repeated (twice in parallel) returns the same record",
+      "ok": true
+    },
+    {
+      "name": "CLAUDE an account_id argument is rejected by the schema",
+      "ok": true
+    },
+    {
+      "name": "CLAUDE tampered reference: explicit error, nothing saved",
+      "ok": true
+    },
+    {
+      "name": "CLAUDE owner comes from the token: a second account gets a separate record",
+      "ok": true
+    },
+    {
+      "name": "CLAUDE token refused on the other endpoint (audience check)",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT 2025-era initialize handshake answered",
+      "ok": true,
+      "note": "protocolVersion 2025-11-25"
+    },
+    {
+      "name": "CHATGPT tools/list without sign-in returns both tools",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT annotations exact",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT formal input and output schemas",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT card linked by _meta.ui.resourceUri",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT securitySchemes: estimate noauth, save oauth2",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT card resource is text/html;profile=mcp-app",
+      "ok": true,
+      "note": "no ui.domain (ChatGPT default sandbox)"
+    },
+    {
+      "name": "CHATGPT anonymous estimate (no token)",
+      "ok": true,
+      "note": "refund 1219, 22 ms"
+    },
+    {
+      "name": "CHATGPT out-of-scope profile refused with a reason",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT Save without token: tool error carrying _meta[\"mcp/www_authenticate\"] with error and error_description",
+      "ok": true,
+      "note": "Bearer resource_metadata=\"https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/mcp/chatgpt\", error=\"insufficient_scope\", error_description=\"Create or connect a demo account to save this estimate\", scope=\"estimates:write\""
+    },
+    {
+      "name": "CHATGPT OAuth started from the challenge",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT authorization request: PKCE S256 and resource indicator",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT sign-up page names the requesting app and the redirect host, no SSN field",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT RFC 9207 iss returned and equal to the issuer",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT account created during authorization, tokens issued",
+      "ok": true,
+      "note": "sign-up round trip 2456 ms"
+    },
+    {
+      "name": "CHATGPT resumed Save stores the estimate shown",
+      "ok": true,
+      "note": "sav_fd4jttzra58d in Demo account JJZ9, 5018 ms from the first Save"
+    },
+    {
+      "name": "CHATGPT Save repeated (twice in parallel) returns the same record",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT an account_id argument is rejected by the schema",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT tampered reference: explicit error, nothing saved",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT owner comes from the token: a second account gets a separate record",
+      "ok": true
+    },
+    {
+      "name": "CHATGPT token refused on the other endpoint (audience check)",
+      "ok": true
+    },
+    {
+      "name": "ChatGPT's published CIMD document (https://chatgpt.com/oauth/client.json) is fetched and accepted; the sign-up page names it",
+      "ok": true,
+      "note": "HTTP 200"
+    },
+    {
+      "name": "Claude Code's published CIMD document (https://claude.ai/oauth/claude-code-client-metadata) is fetched and accepted; the sign-up page names it",
+      "ok": true,
+      "note": "HTTP 200"
+    }
+  ],
+  "http": [
+    {
+      "url": "/mcp/claude",
+      "method": "initialize",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "notifications/initialized",
+      "status": 202,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": null,
+      "status": 405,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "tools/list",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "resources/read",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "tools/call",
+      "status": 401,
+      "www_authenticate": "Bearer error=\"invalid_token\", error_description=\"...\", resource_metadata=\"https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/mcp/claude\", scope=\"estimates:write\""
+    },
+    {
+      "url": "/.well-known/oauth-protected-resource/mcp/claude",
+      "method": null,
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/.well-known/oauth-authorization-server",
+      "method": null,
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/oauth/register",
+      "method": null,
+      "status": 201,
+      "www_authenticate": null
+    },
+    {
+      "url": "/oauth/token",
+      "method": null,
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "initialize",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "notifications/initialized",
+      "status": 202,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": null,
+      "status": 405,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "initialize",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "notifications/initialized",
+      "status": 202,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": null,
+      "status": 405,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "tools/call",
+      "status": 401,
+      "www_authenticate": "Bearer error=\"invalid_token\", error_description=\"...\", resource_metadata=\"https://tax-mcp-demo.theaipipe.com/.well-known/oauth-protected-resource/mcp/claude\", scope=\"estimates:write\""
+    },
+    {
+      "url": "/.well-known/oauth-protected-resource/mcp/claude",
+      "method": null,
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/.well-known/oauth-authorization-server",
+      "method": null,
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/oauth/register",
+      "method": null,
+      "status": 201,
+      "www_authenticate": null
+    },
+    {
+      "url": "/oauth/token",
+      "method": null,
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "initialize",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "notifications/initialized",
+      "status": 202,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": null,
+      "status": 405,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/claude",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "initialize",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "notifications/initialized",
+      "status": 202,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": null,
+      "status": 405,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "tools/list",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "resources/read",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/.well-known/oauth-protected-resource/mcp/chatgpt",
+      "method": null,
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/.well-known/oauth-authorization-server",
+      "method": null,
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/oauth/register",
+      "method": null,
+      "status": 201,
+      "www_authenticate": null
+    },
+    {
+      "url": "/oauth/token",
+      "method": null,
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "initialize",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "notifications/initialized",
+      "status": 202,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": null,
+      "status": 405,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "initialize",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "notifications/initialized",
+      "status": 202,
+      "www_authenticate": null
+    },
+    {
+      "url": "/.well-known/oauth-protected-resource/mcp/chatgpt",
+      "method": null,
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": null,
+      "status": 405,
+      "www_authenticate": null
+    },
+    {
+      "url": "/.well-known/oauth-authorization-server",
+      "method": null,
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/oauth/register",
+      "method": null,
+      "status": 201,
+      "www_authenticate": null
+    },
+    {
+      "url": "/oauth/token",
+      "method": null,
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "initialize",
+      "status": 200,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "notifications/initialized",
+      "status": 202,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": null,
+      "status": 405,
+      "www_authenticate": null
+    },
+    {
+      "url": "/mcp/chatgpt",
+      "method": "tools/call",
+      "status": 200,
+      "www_authenticate": null
+    }
+  ]
+}
