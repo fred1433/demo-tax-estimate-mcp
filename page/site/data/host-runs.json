@@ -5,7 +5,7 @@
     "surface": "chatgpt.com in Chrome 156 on macOS (desktop)",
     "date": "Nov 2, 2026",
     "video": "recordings/chatgpt.mp4",
-    "poster": "recordings/chatgpt.jpg",
+    "poster": "recordings/chatgpt-saved.jpg",
     "video_note": "Run 3, real time (1x), tab only, cropped to the chat column; the opening home screen (account greeting), the @-mention picker frames and the still frames after the save are cut.",
     "why_pending": "After sign-up, ChatGPT came back to its home page (chatgpt.com/), not to the conversation, and did not retry the Save. In all three runs the conversation had to be reopened and Save pressed again.",
     "path": "Account-linking dialog shown by ChatGPT from the card's own Save (about 0.8 s after the click); OAuth ran in the same tab, not a popup. Registration: CIMD https://chatgpt.com/oauth/client.json, callback https://chatgpt.com/connector_platform_oauth_redirect.",
